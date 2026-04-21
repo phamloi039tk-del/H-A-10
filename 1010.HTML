@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ai Là Triệu Phú - Quy Tắc Octet</title>
+    <style>
+        /* CSS STYLES */
+        :root {
+            --bg-color: #001f4d;
+            --text-color: #ffffff;
+            --btn-normal: #003399;
+            --btn-hover: #0055ff;
+            --btn-correct: #009900;
+            --btn-wrong: #cc0000;
+            --btn-selected: #ffcc00;
+            --disabled: #555555;
+            --gold: #ffd700;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header & Footer */
+        .teacher-info {
+            background-color: rgba(0, 0, 0, 0.5);
+            text-align: center;
+            padding: 10px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: var(--gold);
+            letter-spacing: 1px;
+            border-bottom: 1px solid #0055ff;
+        }
+
+        .teacher-footer {
+            border-top: 1px solid #0055ff;
+            border-bottom: none;
+            margin-top: auto;
+        }
+
+        /* Screens */
+        .screen {
+            display: none;
+            flex: 1;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* Title */
+        h1 {
+            color: var(--gold);
+            text-shadow: 2px 2px 4px #000;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2.5em;
+        }
+
+        h2, h3 { margin-bottom: 15px; text-align: center; }
+
+        /* Login Screen */
+        .input-group {
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 25px;
+            border: 2px solid var(--btn-hover);
+            background: rgba(255,255,255,0.9);
+            font-size: 1em;
+            outline: none;
+        }
+
+        .btn {
+            background-color: var(--btn-normal);
+            color: white;
+            border: 2px solid var(--btn-hover);
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .btn:hover { background-color: var(--btn-hover); box-shadow: 0 0 15px var(--btn-hover); }
+        .btn:disabled { background-color: var(--disabled); border-color: var(--disabled); cursor: not-allowed; box-shadow: none; }
+
+        /* Game Screen */
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--btn-hover);
+        }
+
+        .question-number { font-size: 1.2em; font-weight: bold; color: var(--gold); }
+        .timer { font-size: 1.2em; font-weight: bold; color: #ff6666; }
+
+        /* Lifelines */
+        .lifelines {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .lifeline-btn {
+            background: var(--btn-normal);
+            border: 2px solid var(--gold);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .lifeline-btn:hover:not(:disabled) { background: var(--btn-hover); box-shadow: 0 0 10px var(--gold); }
+        .lifeline-btn:disabled { opacity: 0.5; border-color: #777; cursor: not-allowed; text-decoration: line-through; }
+        .lifeline-btn.locked { display: none; }
+
+        /* Question Box */
+        .question-box {
+            background: linear-gradient(180deg, #001a33, #004080);
+            border: 3px solid var(--gold);
+            padding: 25px;
+            border-radius: 15px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.3em;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Answers Grid */
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .answer-btn {
+            background: linear-gradient(90deg, #001a33, #003399);
+            border: 2px solid #0055ff;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .answer-btn::before {
+            content: attr(data-prefix);
+            color: var(--gold);
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .answer-btn:hover:not(:disabled) { background: linear-gradient(90deg, #00264d, #0055ff); transform: scale(1.02); }
+        .answer-btn:disabled { cursor: default; }
+        .answer-btn.selected { background: var(--btn-selected); color: black; border-color: white; }
+        .answer-btn.correct { background: var(--btn-correct); border-color: #00ff00; animation: blink 0.5s 3; }
+        .answer-btn.wrong { background: var(--btn-wrong); border-color: #ff6666; }
+        .answer-btn.hidden { visibility: hidden; }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Overlay Message */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .overlay.active { opacity: 1; pointer-events: all; }
+        
+        .overlay-content {
+            padding: 30px 50px;
+            border-radius: 15px;
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            border: 4px solid white;
+            transform: scale(0.5);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .overlay.active .overlay-content { transform: scale(1); }
+        .msg-correct { background-color: var(--btn-correct); color: white; }
+        .msg-wrong { background-color: var(--btn-wrong); color: white; }
+
+        /* Tables (Result & Leaderboard) */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: white;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #0055ff;
+        }
+
+        th { background-color: var(--btn-normal); color: var(--gold); }
+        tr:nth-child(even) { background-color: rgba(0, 85, 255, 0.2); }
+        tr:hover { background-color: rgba(0, 85, 255, 0.4); }
+
+        .score-display { font-size: 2em; color: var(--gold); margin: 20px 0; font-weight: bold; }
+
+        /* Sound Control */
+        .sound-ctrl {
+            position: absolute;
+            top: 50px;
+            right: 20px;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .answers-grid { grid-template-columns: 1fr; }
+            h1 { font-size: 1.8em; }
+            .question-box { font-size: 1.1em; padding: 15px; }
+            .overlay-content { font-size: 1.5em; padding: 20px; }
+            .sound-ctrl { top: 40px; right: 10px; font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="teacher-info">GIÁO VIÊN THIẾT KẾ: PHẠM LỢI - TRƯỜNG PTDTNT THPT THAN UYÊN</div>
+    
+    <button id="soundBtn" class="sound-ctrl" onclick="toggleSound()">🔊 Tắt Âm</button>
+
+    <!-- SCREEN 1: Màn hình đăng nhập -->
+    <div id="login-screen" class="screen active">
+        <h1>AI LÀ TRIỆU PHÚ<br><span style="font-size:0.6em; color: white;">CHUYÊN ĐỀ: QUY TẮC OCTET</span></h1>
+        <div class="input-group">
+            <label for="studentName">Họ và tên học sinh:</label>
+            <input type="text" id="studentName" placeholder="Nhập họ tên (VD: Nguyễn Văn A)" autocomplete="off">
+        </div>
+        <div class="input-group">
+            <label for="studentClass">Lớp:</label>
+            <input type="text" id="studentClass" placeholder="Nhập lớp (VD: 10A1)" autocomplete="off">
+        </div>
+        <button class="btn" onclick="startGame()">Bắt Đầu Chơi</button>
+        <button class="btn" style="background:#006600;" onclick="showLeaderboard()">Xem Bảng Tổng Hợp</button>
+    </div>
+
+    <!-- SCREEN 2: Màn hình trò chơi -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <div class="question-number">Câu hỏi: <span id="q-num">1</span>/20</div>
+            <div class="timer">Thời gian: <span id="timer-display">00:00</span></div>
+        </div>
+
+        <div class="lifelines">
+            <button id="btn-5050" class="lifeline-btn" onclick="useLifeline('5050')">50:50</button>
+            <button id="btn-audience" class="lifeline-btn" onclick="useLifeline('audience')">Hỏi khán giả</button>
+            <button id="btn-call" class="lifeline-btn locked" onclick="useLifeline('call')">Gọi người thân</button>
+            <button id="btn-wise" class="lifeline-btn locked" onclick="useLifeline('wise')">Hỏi nhà thông thái</button>
+        </div>
+
+        <div id="question-text" class="question-box">Nội dung câu hỏi...</div>
+
+        <div class="answers-grid">
+            <button class="answer-btn" data-prefix="A:" onclick="selectAnswer(0)" id="ans-0">Đáp án A</button>
+            <button class="answer-btn" data-prefix="B:" onclick="selectAnswer(1)" id="ans-1">Đáp án B</button>
+            <button class="answer-btn" data-prefix="C:" onclick="selectAnswer(2)" id="ans-2">Đáp án C</button>
+            <button class="answer-btn" data-prefix="D:" onclick="selectAnswer(3)" id="ans-3">Đáp án D</button>
+        </div>
+    </div>
+
+    <!-- Thông báo Đúng/Sai -->
+    <div id="feedback-overlay" class="overlay">
+        <div id="feedback-content" class="overlay-content">Thông báo</div>
+    </div>
+
+    <!-- SCREEN 3: Màn hình kết quả cá nhân -->
+    <div id="result-screen" class="screen">
+        <h1>KẾT QUẢ BÀI LÀM</h1>
+        <h2 id="res-student-info">Họ tên: - Lớp: </h2>
+        <div class="score-display">Điểm: <span id="res-score">0</span> / 10</div>
+        <h3>Số câu đúng: <span id="res-correct">0</span>/20</h3>
+        <p>Thời gian làm bài: <span id="res-time"></span></p>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Câu</th>
+                        <th>Đáp án của bạn</th>
+                        <th>Đáp án đúng</th>
+                        <th>Kết quả</th>
+                    </tr>
+                </thead>
+                <tbody id="result-table-body">
+                    <!-- Nội dung JS tự điền -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button class="btn" onclick="saveAndShowLeaderboard()">Lưu & Xem Bảng Xếp Hạng</button>
+            <button class="btn" onclick="resetGame()">Làm Lại Bài</button>
+        </div>
+    </div>
+
+    <!-- SCREEN 4: Màn hình Bảng tổng hợp -->
+    <div id="leaderboard-screen" class="screen">
+        <h1>BẢNG TỔNG HỢP KẾT QUẢ</h1>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Họ tên</th>
+                        <th>Lớp</th>
+                        <th>Số câu đúng</th>
+                        <th>Điểm</th>
+                        <th>TG Làm bài</th>
+                        <th>TG Nộp bài</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Nội dung JS tự điền -->
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-top: 20px;">
+            <button class="btn" onclick="resetGame()">Về Trang Chủ</button>
+            <button class="btn" style="background:var(--btn-wrong);" onclick="clearLeaderboard()">Xóa Bảng Tổng Hợp</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="teacher-info teacher-footer">GIÁO VIÊN THIẾT KẾ: PHẠM LỢI - TRƯỜNG PTDTNT THPT THAN UYÊN</div>
+
+<script>
+    // --- BỘ CÂU HỎI (20 câu, phân hoá 4 mức độ) ---
+    // Nhận biết (1-6), Thông hiểu (7-12), Vận dụng (13-16), Vận dụng cao (17-20)
+    const questionBank = [
+        // NHẬN BIẾT (30%)
+        {
+            q: "Theo thuyết cấu tạo hoá học, liên kết hoá học là sự kết hợp giữa các nguyên tử để tạo thành?",
+            options: ["Phân tử hay tinh thể kém bền hơn.", "Phân tử hay tinh thể bền vững hơn.", "Các hạt proton và nơtron.", "Nguyên tử của các nguyên tố khác nhau."],
+            ans: 1
+        },
+        {
+            q: "Theo quy tắc octet, khi tạo liên kết hoá học, nguyên tử có xu hướng đạt tới cấu hình electron bền vững giống như:",
+            options: ["Kim loại kiềm.", "Kim loại kiềm thổ.", "Nguyên tử Halogen.", "Khí hiếm."],
+            ans: 3
+        },
+        {
+            q: "Trong các phản ứng hoá học, các electron nào tham gia vào quá trình tạo thành liên kết hoá học?",
+            options: ["Electron ở lớp trong cùng.", "Chỉ các electron ở phân lớp s.", "Electron hoá trị (lớp ngoài và phân lớp sát ngoài).", "Tất cả các electron của nguyên tử."],
+            ans: 2
+        },
+        {
+            q: "Ngoại trừ Helium (He), các nguyên tử khí hiếm khác đều có bao nhiêu electron ở lớp ngoài cùng?",
+            options: ["2 electron.", "4 electron.", "6 electron.", "8 electron."],
+            ans: 3
+        },
+        {
+            q: "Nguyên tử Chlorine (Cl) thuộc nhóm VIIA. Khi hình thành liên kết hoá học, nó có xu hướng gì để đạt cấu hình octet?",
+            options: ["Nhường 1 electron.", "Nhận hoặc góp chung 1 electron.", "Nhường 7 electron.", "Nhận 2 electron."],
+            ans: 1
+        },
+        {
+            q: "Để biểu diễn electron hoá trị của nguyên tử một nguyên tố, người ta thường dùng kí hiệu gì đặt xung quanh kí hiệu nguyên tố?",
+            options: ["Dấu chấm (.).", "Dấu cộng (+).", "Dấu trừ (-).", "Mũi tên (->)."],
+            ans: 0
+        },
+        // THÔNG HIỂU (30%)
+        {
+            q: "Trong phân tử Cl<sub>2</sub>, để đạt cấu hình electron bền vững theo quy tắc octet, mỗi nguyên tử Chlorine đã thực hiện quá trình nào?",
+            options: ["Nhường đi 1 electron.", "Nhận thêm 1 electron từ môi trường.", "Góp chung 1 electron.", "Góp chung 2 electron."],
+            ans: 2
+        },
+        {
+            q: "Khi hình thành phân tử H<sub>2</sub>O, nguyên tử Oxygen (nhóm VIA) cần làm gì để đạt cấu hình electron bão hoà theo quy tắc octet?",
+            options: ["Nhường 6 electron.", "Góp chung 2 electron với 2 nguyên tử H.", "Nhận 1 electron từ H.", "Góp chung 1 electron."],
+            ans: 1
+        },
+        {
+            q: "Giải thích sự hình thành liên kết trong phân tử NaF (Sodium fluoride) theo quy tắc octet?",
+            options: ["Na nhường 1e, F nhận 1e tạo thành các ion hút nhau.", "Na và F góp chung 1 cặp electron.", "Na nhận 7e, F nhường 7e.", "Na và F không thay đổi cấu hình electron."],
+            ans: 0
+        },
+        {
+            q: "Phân tử nào sau đây có nguyên tử trung tâm KHÔNG tuân theo quy tắc octet (có nhiều hơn 8e lớp ngoài cùng)?",
+            options: ["H<sub>2</sub>O", "CH<sub>4</sub>", "PCl<sub>5</sub>", "NH<sub>3</sub>"],
+            ans: 2
+        },
+        {
+            q: "Tại sao trong tự nhiên, các khí hiếm (He, Ne, Ar...) tồn tại dưới dạng nguyên tử tự do và rất khó liên kết với nguyên tử khác?",
+            options: ["Vì chúng có khối lượng quá nhẹ.", "Vì chúng nằm ở cuối bảng tuần hoàn.", "Vì cấu hình electron của chúng chưa bão hoà.", "Vì chúng đã có cấu hình electron bão hoà bền vững (octet)."],
+            ans: 3
+        },
+        {
+            q: "Nguyên tử có số hiệu Z = 12 (Magnesium) có xu hướng nào khi hình thành liên kết hoá học?",
+            options: ["Nhận 6 electron.", "Nhường 2 electron.", "Góp chung 2 electron.", "Nhường 1 electron."],
+            ans: 1
+        },
+        // VẬN DỤNG (20%)
+        {
+            q: "Trong phân tử CS<sub>2</sub> (Carbon disulfide), tổng số cặp electron lớp ngoài cùng của C và S chưa tham gia liên kết là bao nhiêu? (Biết C nhóm IVA, S nhóm VIA)",
+            options: ["2 cặp.", "3 cặp.", "4 cặp.", "5 cặp."],
+            ans: 2
+        },
+        {
+            q: "Cấu hình electron lớp ngoài cùng của K (Z=19) là 4s<sup>1</sup>, của Br (Z=35) là 4s<sup>2</sup>4p<sup>5</sup>. Liên kết trong KBr được hình thành như thế nào?",
+            options: ["K và Br góp chung 1 cặp electron.", "K nhường 1e tạo K<sup>+</sup>, Br nhận 1e tạo Br<sup>-</sup>.", "K nhận 1e, Br nhường 1e.", "K nhường 2e, Br nhận 2e."],
+            ans: 1
+        },
+        {
+            q: "Phosphine (PH<sub>3</sub>) là khí độc. Vận dụng quy tắc octet, xung quanh nguyên tử Phosphorus (P) trong phân tử có bao nhiêu electron chưa tham gia liên kết?",
+            options: ["0 electron (0 cặp).", "2 electron (1 cặp).", "4 electron (2 cặp).", "6 electron (3 cặp)."],
+            ans: 1
+        },
+        {
+            q: "Một nguyên tử X có cấu hình electron là 1s<sup>2</sup> 2s<sup>2</sup> 2p<sup>4</sup>. X sẽ tạo hợp chất với Hydrogen có công thức nào để thỏa mãn quy tắc octet?",
+            options: ["XH", "XH<sub>2</sub>", "XH<sub>3</sub>", "XH<sub>4</sub>"],
+            ans: 1
+        },
+        // VẬN DỤNG CAO (20%)
+        {
+            q: "Hợp chất X tạo bởi hai nguyên tố A (nhóm IVA) và D (nhóm VIA) có khối lượng phân tử là 76. X là dung môi không phân cực. Công thức của X thỏa mãn quy tắc octet là?",
+            options: ["CO<sub>2</sub>", "SiO<sub>2</sub>", "CS<sub>2</sub>", "SO<sub>2</sub>"],
+            ans: 2
+        },
+        {
+            q: "Trong phân tử O<sub>2</sub>, để mỗi nguyên tử Oxygen đạt quy tắc octet, chúng phải dùng chung bao nhiêu cặp electron?",
+            options: ["1 cặp.", "2 cặp.", "3 cặp.", "4 cặp."],
+            ans: 1
+        },
+        {
+            q: "Xét hệ $H + Cl \\rightarrow HCl$. Năng lượng của phân tử HCl so với hệ hai nguyên tử H và Cl riêng rẽ như thế nào và hệ nào bền hơn?",
+            options: ["Lớn hơn, HCl bền hơn.", "Lớn hơn, H và Cl riêng rẽ bền hơn.", "Nhỏ hơn, HCl bền hơn.", "Nhỏ hơn, H và Cl riêng rẽ bền hơn."],
+            ans: 2
+        },
+        {
+            q: "Đá vôi có thành phần chính là CaCO<sub>3</sub>. Nguyên tử Calcium (Ca, nhóm IIA) đã đạt cấu hình octet trong hợp chất này bằng cách nào?",
+            options: ["Nhường 2 electron để tạo ion Ca<sup>2+</sup>.", "Góp chung 2 electron với nguyên tử C.", "Nhận 6 electron từ nhóm CO<sub>3</sub>.", "Góp chung 2 electron với nguyên tử O."],
+            ans: 0
+        }
+    ];
+
+    // --- STATE VARIABLES ---
+    let currentQ = 0;
+    let scoreCount = 0;
+    let student = { name: "", class: "" };
+    let timeStart = 0;
+    let timerInterval;
+    let secondsElapsed = 0;
+    let userAnswers = []; // Lưu [câu trả lời của user, đúng/sai]
+    let lifelines = {
+        '5050': { used: false, unlock: 1 },
+        'audience': { used: false, unlock: 1 },
+        'call': { used: false, unlock: 11 },
+        'wise': { used: false, unlock: 16 }
+    };
+    let soundEnabled = true;
+
+    // --- AUDIO SYSTEM (Web Audio API - không cần file ngoài) ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+        }
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        document.getElementById('soundBtn').innerHTML = soundEnabled ? "🔊 Tắt Âm" : "🔇 Bật Âm";
+    }
+
+    function playTone(freq, type, duration, vol=0.1) {
+        if(!soundEnabled) return;
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playCorrectSound() {
+        if(!soundEnabled) return;
+        // Chuỗi nốt thăng dần
+        setTimeout(() => playTone(523.25, 'sine', 0.2, 0.2), 0); // C5
+        setTimeout(() => playTone(659.25, 'sine', 0.2, 0.2), 100); // E5
+        setTimeout(() => playTone(783.99, 'sine', 0.4, 0.2), 200); // G5
+        setTimeout(() => playTone(1046.50, 'sine', 0.6, 0.3), 300); // C6
+    }
+
+    function playWrongSound() {
+        if(!soundEnabled) return;
+        // Nốt trầm kéo dài
+        playTone(150, 'sawtooth', 0.8, 0.2);
+        setTimeout(() => playTone(100, 'sawtooth', 1.0, 0.3), 200);
+    }
+
+    // --- GAME LOGIC ---
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        window.scrollTo(0,0);
+    }
+
+    function startGame() {
+        const nameInput = document.getElementById('studentName').value.trim();
+        const classInput = document.getElementById('studentClass').value.trim();
+        
+        if (!nameInput || !classInput) {
+            alert("Vui lòng nhập đầy đủ Họ tên và Lớp để bắt đầu!");
+            return;
+        }
+
+        student.name = nameInput;
+        student.class = classInput;
+        
+        // Reset state
+        currentQ = 0;
+        scoreCount = 0;
+        userAnswers = [];
+        secondsElapsed = 0;
+        
+        // Reset lifelines
+        for(let key in lifelines) lifelines[key].used = false;
+        
+        initAudio(); // Initialize audio context on user interaction
+        switchScreen('game-screen');
+        timeStart = Date.now();
+        startTimer();
+        loadQuestion();
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            secondsElapsed++;
+            const m = Math.floor(secondsElapsed / 60).toString().padStart(2, '0');
+            const s = (secondsElapsed % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${m}:${s}`;
+        }, 1000);
+    }
+
+    function loadQuestion() {
+        const qData = questionBank[currentQ];
+        document.getElementById('q-num').innerText = currentQ + 1;
+        document.getElementById('question-text').innerHTML = qData.q; // Dùng innerHTML để hiển thị sub/sup
+
+        // Hiển thị đáp án
+        for (let i = 0; i < 4; i++) {
+            const btn = document.getElementById(`ans-${i}`);
+            btn.innerHTML = qData.options[i]; // Dùng innerHTML cho sub/sup
+            btn.classList.remove('selected', 'correct', 'wrong', 'hidden');
+            btn.disabled = false;
+        }
+
+        updateLifelineButtons();
+    }
+
+    function updateLifelineButtons() {
+        const qIndex = currentQ + 1; // 1 to 20
+        
+        // Check unlock logic
+        if (qIndex >= lifelines['call'].unlock) document.getElementById('btn-call').classList.remove('locked');
+        if (qIndex >= lifelines['wise'].unlock) document.getElementById('btn-wise').classList.remove('locked');
+
+        // Update state styling
+        for(let key in lifelines) {
+            const btn = document.getElementById(`btn-${key}`);
+            if (lifelines[key].used) {
+                btn.disabled = true;
+            } else {
+                btn.disabled = false;
+            }
+        }
+    }
+
+    function selectAnswer(index) {
+        // Khóa các nút
+        for (let i = 0; i < 4; i++) {
+            document.getElementById(`ans-${i}`).disabled = true;
+        }
+        
+        const btn = document.getElementById(`ans-${index}`);
+        btn.classList.add('selected');
+        
+        const isCorrect = (index === questionBank[currentQ].ans);
+        
+        // Disable lifelines during check
+        document.querySelectorAll('.lifeline-btn').forEach(b => b.disabled = true);
+
+        // Hiệu ứng chờ 1.5s
+        setTimeout(() => {
+            if (isCorrect) {
+                btn.classList.replace('selected', 'correct');
+                scoreCount++;
+                showOverlay(true);
+                playCorrectSound();
+            } else {
+                btn.classList.replace('selected', 'wrong');
+                document.getElementById(`ans-${questionBank[currentQ].ans}`).classList.add('correct');
+                showOverlay(false);
+                playWrongSound();
+            }
+
+            // Lưu kết quả
+            userAnswers.push({
+                userAnsIndex: index,
+                correctAnsIndex: questionBank[currentQ].ans,
+                isCorrect: isCorrect
+            });
+
+            // Chuyển câu sau 2.5s
+            setTimeout(() => {
+                document.getElementById('feedback-overlay').classList.remove('active');
+                currentQ++;
+                if (currentQ < 20) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 2500);
+
+        }, 1500);
+    }
+
+    function showOverlay(isCorrect) {
+        const overlay = document.getElementById('feedback-overlay');
+        const content = document.getElementById('feedback-content');
+        
+        if (isCorrect) {
+            content.className = 'overlay-content msg-correct';
+            content.innerText = 'CHÚC MỪNG BẠN TRẢ LỜI ĐÚNG';
+        } else {
+            content.className = 'overlay-content msg-wrong';
+            content.innerText = 'RẤT TIẾC BẠN ĐÃ TRẢ LỜI SAI';
+        }
+        overlay.classList.add('active');
+    }
+
+    // --- LIFELINES LOGIC ---
+    function useLifeline(type) {
+        if (lifelines[type].used) return;
+        lifelines[type].used = true;
+        document.getElementById(`btn-${type}`).disabled = true;
+        initAudio(); // ensure audio context
+
+        const correctAns = questionBank[currentQ].ans;
+        let wrongAnswers = [0, 1, 2, 3].filter(i => i !== correctAns);
+
+        switch(type) {
+            case '5050':
+                playTone(400, 'triangle', 0.5);
+                // Ẩn 2 đáp án sai ngẫu nhiên
+                wrongAnswers.sort(() => Math.random() - 0.5);
+                document.getElementById(`ans-${wrongAnswers[0]}`).classList.add('hidden');
+                document.getElementById(`ans-${wrongAnswers[1]}`).classList.add('hidden');
+                break;
+            case 'audience':
+                playTone(600, 'square', 0.5);
+                // Tạo tỉ lệ % giả
+                let pCorrect = Math.floor(Math.random() * 30) + 50; // 50-80%
+                let remaining = 100 - pCorrect;
+                let text = "Ý kiến khán giả trường quay:\n";
+                let labels = ['A', 'B', 'C', 'D'];
+                for(let i=0; i<4; i++) {
+                    if (document.getElementById(`ans-${i}`).classList.contains('hidden')) continue;
+                    if(i === correctAns) {
+                        text += `Đáp án ${labels[i]}: ${pCorrect}%\n`;
+                    } else {
+                        let p = Math.floor(Math.random() * remaining);
+                        if(wrongAnswers[wrongAnswers.length-1] === i) p = remaining; // cái cuối gánh phần dư
+                        remaining -= p;
+                        text += `Đáp án ${labels[i]}: ${p}%\n`;
+                    }
+                }
+                alert(text);
+                break;
+            case 'call':
+                playTone(300, 'sine', 1.0);
+                let friendChoice = Math.random() > 0.2 ? correctAns : wrongAnswers[0]; // 80% đúng
+                let fLabel = ['A', 'B', 'C', 'D'][friendChoice];
+                alert(`Người thân: "Alo, mình nghĩ đáp án đúng là ${fLabel}. Chúc bạn may mắn!"`);
+                break;
+            case 'wise':
+                playTone(800, 'sine', 0.5); setTimeout(()=>playTone(900, 'sine', 0.5), 100);
+                let wLabel = ['A', 'B', 'C', 'D'][correctAns];
+                alert(`Nhà thông thái: "Chắc chắn là đáp án ${wLabel}. Tôi nghiên cứu rất kĩ quy tắc Octet rồi!"`);
+                break;
+        }
+    }
+
+    // --- RESULT & LEADERBOARD LOGIC ---
+    function endGame() {
+        clearInterval(timerInterval);
+        
+        // Tính điểm: Mỗi câu 0.5đ (20 câu = 10đ)
+        let finalScore = (scoreCount * 0.5).toFixed(1);
+        
+        // Thời gian làm
+        const m = Math.floor(secondsElapsed / 60);
+        const s = secondsElapsed % 60;
+        const timeStr = `${m} phút ${s} giây`;
+
+        // Đổ dữ liệu ra màn hình Kết quả
+        document.getElementById('res-student-info').innerText = `Họ tên: ${student.name} - Lớp: ${student.class}`;
+        document.getElementById('res-score').innerText = finalScore;
+        document.getElementById('res-correct').innerText = scoreCount;
+        document.getElementById('res-time').innerText = timeStr;
+
+        // Tạo bảng chi tiết
+        const tbody = document.getElementById('result-table-body');
+        tbody.innerHTML = '';
+        let labels = ['A', 'B', 'C', 'D'];
+
+        userAnswers.forEach((ans, index) => {
+            let tr = document.createElement('tr');
+            let uLabel = labels[ans.userAnsIndex];
+            let cLabel = labels[ans.correctAnsIndex];
+            
+            tr.innerHTML = `
+                <td>Câu ${index + 1}</td>
+                <td style="color: ${ans.isCorrect ? '#00ff00' : '#ff6666'}">${uLabel}</td>
+                <td style="color: #00ff00">${cLabel}</td>
+                <td>${ans.isCorrect ? '✅' : '❌'}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        switchScreen('result-screen');
+    }
+
+    function saveAndShowLeaderboard() {
+        // Lưu vào localStorage
+        const now = new Date();
+        const submitTime = `${now.getHours()}:${now.getMinutes().toString().padStart(2,'0')} ${now.getDate()}/${now.getMonth()+1}`;
+        const m = Math.floor(secondsElapsed / 60).toString().padStart(2,'0');
+        const s = (secondsElapsed % 60).toString().padStart(2,'0');
+        
+        const record = {
+            name: student.name,
+            class: student.class,
+            correct: scoreCount,
+            score: (scoreCount * 0.5).toFixed(1),
+            duration: `${m}:${s}`,
+            submitAt: submitTime
+        };
+
+        let data = JSON.parse(localStorage.getItem('millionaire_results') || '[]');
+        data.push(record);
+        
+        // Sắp xếp điểm cao xuống thấp, TG nhanh lên trên
+        data.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return a.duration.localeCompare(b.duration);
+        });
+
+        localStorage.setItem('millionaire_results', JSON.stringify(data));
+
+        renderLeaderboard(data);
+        switchScreen('leaderboard-screen');
+    }
+
+    function showLeaderboard() {
+        let data = JSON.parse(localStorage.getItem('millionaire_results') || '[]');
+        renderLeaderboard(data);
+        switchScreen('leaderboard-screen');
+    }
+
+    function renderLeaderboard(data) {
+        const tbody = document.getElementById('leaderboard-body');
+        tbody.innerHTML = '';
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7">Chưa có dữ liệu</td></tr>`;
+            return;
+        }
+
+        data.forEach((row, index) => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${row.name}</td>
+                <td>${row.class}</td>
+                <td>${row.correct}/20</td>
+                <td style="font-weight:bold; color:var(--gold);">${row.score}</td>
+                <td>${row.duration}</td>
+                <td>${row.submitAt}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function clearLeaderboard() {
+        if(confirm("Bạn có chắc chắn muốn xóa toàn bộ dữ liệu bảng tổng hợp?")) {
+            localStorage.removeItem('millionaire_results');
+            renderLeaderboard([]);
+        }
+    }
+
+    function resetGame() {
+        document.getElementById('studentName').value = '';
+        document.getElementById('studentClass').value = '';
+        // Lock lại các quyền trợ giúp nâng cao
+        document.getElementById('btn-call').classList.add('locked');
+        document.getElementById('btn-wise').classList.add('locked');
+        clearInterval(timerInterval);
+        switchScreen('login-screen');
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ai Là Triệu Phú - Hóa Học THPT</title>
+    <style>
+        :root {
+            --bg-dark: #020a1c;
+            --bg-panel: #0d214f;
+            --text-main: #ffffff;
+            --gold: #ffcc00;
+            --gold-hover: #ffdb4d;
+            --btn-bg: #091a40;
+            --btn-border: #3a68b8;
+            --correct: #27ae60;
+            --wrong: #e74c3c;
+            --selected: #f39c12;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #051433 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--gold);
+            border-bottom: 1px solid var(--btn-border);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        /* SCREENS */
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* INTRO SCREEN */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-container h1 {
+            font-size: 3rem;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .login-box {
+            background: var(--bg-panel);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--btn-border);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--btn-border);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--gold);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #1e4592, var(--btn-bg));
+            color: white;
+            border: 2px solid var(--btn-border);
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to bottom, #2a5bbd, #123170);
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 204, 0, 0.3);
+        }
+
+        /* GAME SCREEN */
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--bg-panel);
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: 1px solid var(--btn-border);
+        }
+
+        .stat-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        .lifelines {
+            display: flex;
+            gap: 15px;
+        }
+
+        .lifeline-btn {
+            background: var(--btn-bg);
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .lifeline-btn:hover:not(.used):not(.locked) {
+            background: var(--gold);
+            color: var(--bg-dark);
+            transform: scale(1.1);
+        }
+
+        .lifeline-btn.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: gray;
+            color: gray;
+        }
+
+        .lifeline-btn.locked {
+            display: none !important;
+        }
+
+        .lifeline-btn .tooltip {
+            position: absolute;
+            bottom: -30px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            display: none;
+            pointer-events: none;
+        }
+
+        .lifeline-btn:hover .tooltip { display: block; }
+
+        .question-box {
+            background: linear-gradient(to right, #091a40, #123170, #091a40);
+            border: 2px solid var(--btn-border);
+            border-radius: 50px;
+            padding: 30px;
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .option {
+            background: linear-gradient(to right, #091a40, #123170, #091a40);
+            border: 2px solid var(--btn-border);
+            border-radius: 30px;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover:not(.disabled) {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+        }
+
+        .option.selected {
+            background: var(--selected);
+            border-color: var(--gold);
+            color: white;
+        }
+
+        .option.correct {
+            background: var(--correct);
+            border-color: #2ecc71;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .option.wrong {
+            background: var(--wrong);
+            border-color: #c0392b;
+            color: white;
+        }
+
+        .option.disabled {
+            pointer-events: none;
+        }
+
+        .option.hidden-option {
+            visibility: hidden;
+        }
+
+        .opt-letter {
+            color: var(--gold);
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .option.selected .opt-letter, 
+        .option.correct .opt-letter, 
+        .option.wrong .opt-letter {
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-panel);
+            border: 3px solid var(--gold);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
+            animation: bounceIn 0.5s;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .modal-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-title.success { color: var(--correct); }
+        .modal-title.error { color: var(--wrong); }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        /* RESULT & LEADERBOARD */
+        .result-box, .leaderboard-box {
+            background: var(--bg-panel);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--btn-border);
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--gold);
+        }
+
+        .result-header h2 { font-size: 2rem; }
+        
+        .review-list {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .review-item {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 5px solid gray;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .review-item.correct-row { border-color: var(--correct); }
+        .review-item.wrong-row { border-color: var(--wrong); }
+
+        .review-item strong { color: var(--gold); }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid var(--btn-border);
+        }
+
+        th {
+            background: rgba(255, 204, 0, 0.2);
+            color: var(--gold);
+        }
+
+        tr:nth-child(even) { background: rgba(0,0,0,0.2); }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-group .btn { width: auto; min-width: 150px; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--btn-border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .question-box { font-size: 1.1rem; padding: 20px; border-radius: 20px; }
+            .option { border-radius: 15px; padding: 12px 20px; }
+            .game-header { flex-direction: column; gap: 15px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        GIÁO VIÊN THIẾT KẾ: PHẠM LỢI - TRƯỜNG PTDTNT THPT THAN UYÊN
+    </div>
+
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="screen-login" class="screen active">
+        <div class="logo-container">
+            <h1>AI LÀ TRIỆU PHÚ</h1>
+            <p style="color: var(--gold); font-size: 1.2rem;">Chuyên đề: Ôn tập Chương 5 - Năng lượng hoá học</p>
+        </div>
+        <div class="login-box">
+            <div class="input-group">
+                <label for="studentName">Họ và tên học sinh:</label>
+                <input type="text" id="studentName" placeholder="Nhập họ tên của bạn..." autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="studentClass">Lớp:</label>
+                <input type="text" id="studentClass" placeholder="Nhập lớp (VD: 10A1)..." autocomplete="off">
+            </div>
+            <button class="btn" onclick="startGame()">BẮT ĐẦU THI</button>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH TRÒ CHƠI -->
+    <div id="screen-game" class="screen">
+        <div class="game-header">
+            <div class="stat-box">Câu: <span id="q-number">1/20</span></div>
+            <div class="lifelines">
+                <button class="lifeline-btn" id="btn-50" onclick="useLifeline('50')">
+                    50
+                    <span class="tooltip">50:50</span>
+                </button>
+                <button class="lifeline-btn" id="btn-aud" onclick="useLifeline('aud')">
+                    👥
+                    <span class="tooltip">Khán giả</span>
+                </button>
+                <button class="lifeline-btn locked" id="btn-call" onclick="useLifeline('call')">
+                    📞
+                    <span class="tooltip">Gọi người thân</span>
+                </button>
+                <button class="lifeline-btn locked" id="btn-wise" onclick="useLifeline('wise')">
+                    🧙‍♂️
+                    <span class="tooltip">Nhà thông thái</span>
+                </button>
+            </div>
+            <div class="stat-box">Thời gian: <span id="timer">00:00</span></div>
+        </div>
+
+        <div class="question-box" id="question-text">
+            Nội dung câu hỏi sẽ hiển thị ở đây...
+        </div>
+
+        <div class="options-grid" id="options-container">
+            <div class="option" onclick="selectOption(0)">
+                <span class="opt-letter">A.</span> <span id="opt-0-text">Đáp án A</span>
+            </div>
+            <div class="option" onclick="selectOption(1)">
+                <span class="opt-letter">B.</span> <span id="opt-1-text">Đáp án B</span>
+            </div>
+            <div class="option" onclick="selectOption(2)">
+                <span class="opt-letter">C.</span> <span id="opt-2-text">Đáp án C</span>
+            </div>
+            <div class="option" onclick="selectOption(3)">
+                <span class="opt-letter">D.</span> <span id="opt-3-text">Đáp án D</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH KẾT QUẢ CÁ NHÂN -->
+    <div id="screen-result" class="screen">
+        <div class="result-box">
+            <div class="result-header">
+                <h2>BÁO CÁO KẾT QUẢ</h2>
+                <p style="margin-top: 10px; font-size: 1.1rem;">Học sinh: <span id="res-name" style="color:white"></span> - Lớp: <span id="res-class" style="color:white"></span></p>
+                <p style="margin-top: 5px; font-size: 1.2rem;">Số câu đúng: <span id="res-correct" style="color:#2ecc71"></span>/20 | Điểm: <span id="res-score" style="color:#f39c12"></span></p>
+                <p style="margin-top: 5px; font-size: 1rem;">Thời gian làm bài: <span id="res-time" style="color:white"></span></p>
+            </div>
+            <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--btn-border); padding-bottom: 10px;">Chi tiết đáp án:</h3>
+            <div class="review-list" id="review-list">
+                <!-- Chi tiết từng câu đổ vào đây -->
+            </div>
+            <div class="btn-group" style="margin-top: 20px;">
+                <button class="btn" onclick="showLeaderboard()">XEM BẢNG TỔNG HỢP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH BẢNG TỔNG HỢP -->
+    <div id="screen-leaderboard" class="screen">
+        <div class="leaderboard-box">
+            <div class="result-header">
+                <h2>BẢNG TỔNG HỢP KẾT QUẢ</h2>
+            </div>
+            <div class="table-responsive">
+                <table id="lb-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Họ và tên</th>
+                            <th>Lớp</th>
+                            <th>Số câu đúng</th>
+                            <th>Điểm</th>
+                            <th>TG Nộp</th>
+                            <th>TG Làm bài</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lb-body">
+                        <!-- Dữ liệu bảng -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-group">
+                <button class="btn" onclick="resetGame()">LÀM LẠI BÀI</button>
+                <button class="btn" style="background: var(--wrong); border-color: #c0392b;" onclick="clearLeaderboard()">XÓA BẢNG</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL THÔNG BÁO -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-title">THÔNG BÁO</div>
+            <div class="modal-text" id="modal-text">Nội dung</div>
+            <button class="btn" id="modal-btn" onclick="closeModal()">TIẾP TỤC</button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu ngân hàng câu hỏi - Ôn tập Chương 5
+        const questionsDB = [
+            // Nhận biết (30% = 6 câu)
+            {
+                q: "Phản ứng có &Delta;<sub>r</sub>H > 0 được gọi là phản ứng gì?",
+                options: ["Phản ứng thu nhiệt.", "Phản ứng toả nhiệt.", "Phản ứng oxi hoá.", "Phản ứng phân huỷ."],
+                ans: 0
+            },
+            {
+                q: "Công thức tính biến thiên enthalpy chuẩn theo nhiệt tạo thành là:",
+                options: [
+                    "&Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = &sum;&Delta;<sub>f</sub>H<sup>o</sup><sub>298</sub> (sp) - &sum;&Delta;<sub>f</sub>H<sup>o</sup><sub>298</sub> (cđ)", 
+                    "&Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = &sum;&Delta;<sub>f</sub>H<sup>o</sup><sub>298</sub> (cđ) - &sum;&Delta;<sub>f</sub>H<sup>o</sup><sub>298</sub> (sp)", 
+                    "&Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = &sum;E<sub>b</sub> (cđ) - &sum;E<sub>b</sub> (sp)", 
+                    "&Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = &sum;E<sub>b</sub> (sp) - &sum;E<sub>b</sub> (cđ)"
+                ],
+                ans: 0
+            },
+            {
+                q: "Công thức tính biến thiên enthalpy chuẩn theo năng lượng liên kết (với các chất đều ở thể khí) là:",
+                options: [
+                    "&Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = &sum;E<sub>b</sub> (sp) - &sum;E<sub>b</sub> (cđ)", 
+                    "&Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = &sum;&Delta;<sub>f</sub>H<sup>o</sup><sub>298</sub> (sp) - &sum;&Delta;<sub>f</sub>H<sup>o</sup><sub>298</sub> (cđ)", 
+                    "&Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = &sum;E<sub>b</sub> (cđ) - &sum;E<sub>b</sub> (sp)", 
+                    "&Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = &sum;&Delta;<sub>f</sub>H<sup>o</sup><sub>298</sub> (cđ) - &sum;&Delta;<sub>f</sub>H<sup>o</sup><sub>298</sub> (sp)"
+                ],
+                ans: 2
+            },
+            {
+                q: "Trong phản ứng hoá học, nếu tổng năng lượng liên kết của các chất tham gia lớn hơn các chất sản phẩm thì phản ứng đó:",
+                options: ["Thu nhiệt.", "Toả nhiệt.", "Không có sự trao đổi nhiệt.", "Vừa thu vừa toả nhiệt."],
+                ans: 0
+            },
+            {
+                q: "Nhiệt tạo thành chuẩn của các đơn chất ở trạng thái bền vững nhất có giá trị bằng:",
+                options: ["< 0", "> 0", "0", "1"],
+                ans: 2
+            },
+            {
+                q: "Phát biểu nào sau đây KHÔNG đúng?",
+                options: [
+                    "Phản ứng trung hoà acid - base là phản ứng thu nhiệt.", 
+                    "Phản ứng cháy của nhiên liệu thường là phản ứng toả nhiệt.", 
+                    "Phản ứng có &Delta;H < 0 là phản ứng toả nhiệt.", 
+                    "Phản ứng phân huỷ thường là phản ứng thu nhiệt."
+                ],
+                ans: 0
+            },
+            // Thông hiểu (30% = 6 câu)
+            {
+                q: "Cho phản ứng chuyển hoá: P(s, đỏ) &rarr; P(s, trắng) có &Delta;<sub>r</sub>H<sup>o</sup><sub>298</sub> = 17,6 kJ. Phát biểu nào chứng tỏ đúng?",
+                options: [
+                    "Phản ứng thu nhiệt, P đỏ bền vững hơn P trắng.", 
+                    "Phản ứng toả nhiệt, P đỏ bền vững hơn P trắng.", 
+                    "Phản ứng thu nhiệt, P trắng bền vững hơn P đỏ.", 
+                    "Phản ứng toả nhiệt, P trắng bền vững hơn P đỏ."
+                ],
+                ans: 0
+            },
+            {
+                q: "Cho phản ứng: HCl(aq) + NaOH(aq) &rarr; NaCl(aq) + H<sub>2</sub>O(l), &Delta;H = -57,3 kJ. Phát biểu nào sau đây SAI?",
+                options: [
+                    "Cho 1 mol HCl tác dụng với 1 mol NaOH toả ra nhiệt lượng 57,3 kJ.", 
+                    "Cho dư HCl tác dụng với 1 mol NaOH thì hệ thu vào nhiệt lượng 57,3 kJ.", 
+                    "Đây là phản ứng toả nhiệt.", 
+                    "Nhiệt độ dung dịch tăng lên sau khi phản ứng xảy ra."
+                ],
+                ans: 1
+            },
+            {
+                q: "Cho phản ứng: H<sub>2</sub>(g) + I<sub>2</sub>(g) &rarr; 2HI(g), &Delta;<sub>r</sub>H = +11,3 kJ. Phát biểu nào đúng?",
+                options: [
+                    "Tổng nhiệt phá vỡ liên kết của chất phản ứng lớn hơn nhiệt toả ra khi tạo sản phẩm.", 
+                    "Phản ứng giải phóng nhiệt lượng 11,3 kJ khi 2 mol HI tạo thành.", 
+                    "Năng lượng chứa trong phân tử HI thấp hơn H<sub>2</sub> và I<sub>2</sub>.", 
+                    "Phản ứng toả nhiệt và dễ tự xảy ra."
+                ],
+                ans: 0
+            },
+            {
+                q: "Trong quá trình diễn ra một phản ứng toả nhiệt, nhiệt độ của môi trường xung quanh sẽ thay đổi như thế nào?",
+                options: ["Giảm xuống.", "Tăng lên.", "Không thay đổi.", "Tăng rồi giảm ngay lập tức."],
+                ans: 1
+            },
+            {
+                q: "Ở nhiệt độ 500 K, cho phản ứng: C(s) + CO<sub>2</sub>(g) &rarr; 2CO(g) có &Delta;<sub>r</sub>H<sup>o</sup><sub>500</sub> = 173,6 kJ. Phản ứng này là:",
+                options: ["Phản ứng toả nhiệt.", "Không có sự trao đổi nhiệt.", "Phản ứng thu nhiệt.", "Phản ứng tự phát sáng."],
+                ans: 2
+            },
+            {
+                q: "Quá trình hoặc phản ứng nào sau đây KHÔNG phải là quá trình toả nhiệt?",
+                options: [
+                    "Đốt cháy than trong lò.", 
+                    "Phản ứng trung hoà giữa acid và base.", 
+                    "Quá trình hô hấp tế bào trong cơ thể.", 
+                    "Pha viên sủi vitamin C vào cốc nước."
+                ],
+                ans: 3
+            },
+            // Vận dụng thấp (20% = 4 câu)
+            {
+                q: "Cho phản ứng: CO(g) + 1/2 O<sub>2</sub>(g) &rarr; CO<sub>2</sub>(g) có &Delta;<sub>r</sub>H = -283,0 kJ. Biết nhiệt tạo thành chuẩn của CO<sub>2</sub>(g) là -393,5 kJ/mol. Nhiệt tạo thành chuẩn của CO(g) là:",
+                options: ["-110,5 kJ/mol.", "+110,5 kJ/mol.", "-141,5 kJ/mol.", "-221,0 kJ/mol."],
+                ans: 0
+            },
+            {
+                q: "Biết giá trị năng lượng liên kết: E<sub>b</sub>(C-H)=418, E<sub>b</sub>(C-C)=346, E<sub>b</sub>(C=C)=612 (kJ/mol). Biến thiên enthalpy của phản ứng C<sub>3</sub>H<sub>8</sub>(g) &rarr; CH<sub>4</sub>(g) + C<sub>2</sub>H<sub>4</sub>(g) có giá trị là:",
+                options: ["-80 kJ.", "+80 kJ.", "+103 kJ.", "-103 kJ."],
+                ans: 1
+            },
+            {
+                q: "Hoà tan muối NH<sub>4</sub>NO<sub>3</sub> khan vào nước, nhiệt độ của nước giảm đi. Biết quá trình này có &Delta;H = +26 kJ. Nếu hoà tan 1 mol muối này vào nước thì hệ sẽ:",
+                options: ["Toả ra nhiệt lượng 26 kJ.", "Thu vào nhiệt lượng 26 kJ.", "Thu vào nhiệt lượng 13 kJ.", "Toả ra nhiệt lượng 52 kJ."],
+                ans: 1
+            },
+            {
+                q: "Làm thí nghiệm: Cho cùng số mol các kim loại Mg, Zn, Fe lần lượt vào 3 bình chứa dung dịch CuSO<sub>4</sub> dư. Nhiệt độ tăng lên cao nhất ở mỗi bình lần lượt là &Delta;T<sub>1</sub>, &Delta;T<sub>2</sub>, &Delta;T<sub>3</sub>. Thứ tự đúng là:",
+                options: [
+                    "&Delta;T<sub>1</sub> > &Delta;T<sub>2</sub> > &Delta;T<sub>3</sub>", 
+                    "&Delta;T<sub>1</sub> < &Delta;T<sub>2</sub> < &Delta;T<sub>3</sub>", 
+                    "&Delta;T<sub>2</sub> > &Delta;T<sub>1</sub> > &Delta;T<sub>3</sub>", 
+                    "&Delta;T<sub>3</sub> > &Delta;T<sub>2</sub> > &Delta;T<sub>1</sub>"
+                ],
+                ans: 0
+            },
+            // Vận dụng cao (20% = 4 câu)
+            {
+                q: "Đốt cháy 5 g ethanol (C<sub>2</sub>H<sub>5</sub>OH), nhiệt toả ra làm nóng chảy hoàn toàn 447 g nước đá ở 0°C. Biết 1 g nước đá nóng chảy hấp thụ 333,5 J nhiệt. Biến thiên enthalpy của phản ứng đốt cháy ethanol là:",
+                options: ["-1371,5 kJ/mol.", "-954,0 kJ/mol.", "-149,0 kJ/mol.", "+149,0 kJ/mol."],
+                ans: 0
+            },
+            {
+                q: "Cho phản ứng tổng hợp ammonia: N<sub>2</sub>(g) + 3H<sub>2</sub>(g) &rarr; 2NH<sub>3</sub>(g) có &Delta;H = -92 kJ. Biết năng lượng liên kết E<sub>b</sub>(N&equiv;N) = 946 kJ/mol, E<sub>b</sub>(H-H) = 436 kJ/mol. Năng lượng liên kết N-H trong phân tử NH<sub>3</sub> là:",
+                options: ["361 kJ/mol.", "391 kJ/mol.", "245 kJ/mol.", "490 kJ/mol."],
+                ans: 1
+            },
+            {
+                q: "Để kéo vật 500 kg lên cao 10m, người thợ tiêu hao 49 kJ. Biết &Delta;<sub>f</sub>H của glucose, CO<sub>2</sub>, H<sub>2</sub>O lần lượt là -1271, -393,5, -285,8 (kJ/mol). Lượng glucose tối thiểu cần ăn để bù phần năng lượng này là:",
+                options: ["31,20 g.", "0,32 g.", "3,15 g.", "314,7 g."],
+                ans: 2
+            },
+            {
+                q: "Cho biết ở 500K: (1) C(s)+CO<sub>2</sub>(g) &rarr; 2CO(g), &Delta;H=173,6 kJ; (2) C(s)+H<sub>2</sub>O(g) &rarr; CO(g)+H<sub>2</sub>(g), &Delta;H=133,8 kJ. Biến thiên enthalpy của phản ứng CO(g)+H<sub>2</sub>O(g) &rarr; CO<sub>2</sub>(g)+H<sub>2</sub>(g) là:",
+                options: ["+39,8 kJ.", "-47,0 kJ.", "+106,7 kJ.", "-39,8 kJ."],
+                ans: 3
+            }
+        ];
+
+        // Biến trạng thái trò chơi
+        let gameState = {
+            name: "",
+            className: "",
+            startTime: 0,
+            timerInterval: null,
+            elapsedSeconds: 0,
+            currentIndex: 0,
+            correctCount: 0,
+            score: 0,
+            answersRecord: [],
+            isAnswering: false,
+            lifelines: { fifty: false, aud: false, call: false, wise: false }
+        };
+
+        const alphabet = ["A", "B", "C", "D"];
+
+        // --- WEB AUDIO API (Tạo âm thanh không cần file ngoài) ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playCorrectSound() {
+            initAudio();
+            playTone(523.25, 'sine', 0.15, 0.2); // C5
+            setTimeout(() => playTone(659.25, 'sine', 0.15, 0.2), 100); // E5
+            setTimeout(() => playTone(783.99, 'sine', 0.3, 0.2), 200); // G5
+            setTimeout(() => playTone(1046.50, 'sine', 0.5, 0.2), 300); // C6
+        }
+
+        function playWrongSound() {
+            initAudio();
+            playTone(300, 'sawtooth', 0.3, 0.15);
+            setTimeout(() => playTone(250, 'sawtooth', 0.5, 0.15), 250);
+        }
+
+        function playTickSound() {
+            if(!audioCtx) return;
+            playTone(800, 'square', 0.05, 0.01);
+        }
+
+        // --- CORE GAME LOGIC ---
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            const name = document.getElementById("studentName").value.trim();
+            const cls = document.getElementById("studentClass").value.trim();
+            if (!name || !cls) {
+                showModal("LỖI", "Vui lòng nhập đầy đủ Họ tên và Lớp!", false);
+                return;
+            }
+            
+            initAudio(); // Initialize audio on user gesture
+            
+            gameState = {
+                name: name,
+                className: cls,
+                startTime: Date.now(),
+                elapsedSeconds: 0,
+                currentIndex: 0,
+                correctCount: 0,
+                score: 0,
+                answersRecord: [],
+                isAnswering: false,
+                lifelines: { fifty: false, aud: false, call: false, wise: false }
+            };
+
+            // Reset lifelines UI
+            document.querySelectorAll('.lifeline-btn').forEach(btn => btn.classList.remove('used'));
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.elapsedSeconds++;
+                if(gameState.elapsedSeconds % 2 === 0) playTickSound(); // Nhạc nền (Tick tock nhẹ)
+                updateTimerUI();
+            }, 1000);
+
+            switchScreen('screen-game');
+            loadQuestion();
+        }
+
+        function formatTime(secs) {
+            let m = Math.floor(secs / 60);
+            let s = secs % 60;
+            return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+        }
+
+        function updateTimerUI() {
+            document.getElementById("timer").innerText = formatTime(gameState.elapsedSeconds);
+        }
+
+        function loadQuestion() {
+            if (gameState.currentIndex >= questionsDB.length) {
+                endGame();
+                return;
+            }
+
+            gameState.isAnswering = false;
+            let qData = questionsDB[gameState.currentIndex];
+            
+            document.getElementById("q-number").innerText = (gameState.currentIndex + 1) + "/20";
+            document.getElementById("question-text").innerHTML = `<strong>Câu ${gameState.currentIndex + 1}:</strong> ${qData.q}`;
+
+            let optContainer = document.getElementById("options-container");
+            optContainer.innerHTML = "";
+            
+            for (let i = 0; i < 4; i++) {
+                optContainer.innerHTML += `
+                    <div class="option" id="opt-${i}" onclick="selectOption(${i})">
+                        <span class="opt-letter">${alphabet[i]}.</span> 
+                        <span class="opt-text">${qData.options[i]}</span>
+                    </div>
+                `;
+            }
+
+            // Quản lý hiển thị Quyền trợ giúp
+            let qIndex = gameState.currentIndex;
+            if (qIndex >= 10) document.getElementById('btn-call').classList.remove('locked');
+            if (qIndex >= 15) document.getElementById('btn-wise').classList.remove('locked');
+        }
+
+        function selectOption(selectedIndex) {
+            if (gameState.isAnswering) return;
+            gameState.isAnswering = true;
+
+            let qData = questionsDB[gameState.currentIndex];
+            let correctIndex = qData.ans;
+            let isCorrect = (selectedIndex === correctIndex);
+
+            // UI phản hồi
+            let selectedEl = document.getElementById(`opt-${selectedIndex}`);
+            let correctEl = document.getElementById(`opt-${correctIndex}`);
+            
+            selectedEl.classList.add('selected');
+
+            setTimeout(() => {
+                if (isCorrect) {
+                    selectedEl.classList.remove('selected');
+                    selectedEl.classList.add('correct');
+                    playCorrectSound();
+                    gameState.correctCount++;
+                    gameState.score += 10;
+                    showModal("CHÚC MỪNG BẠN TRẢ LỜI ĐÚNG", "", true, true);
+                } else {
+                    selectedEl.classList.remove('selected');
+                    selectedEl.classList.add('wrong');
+                    correctEl.classList.add('correct');
+                    playWrongSound();
+                    showModal("RẤT TIẾC BẠN ĐÃ TRẢ LỜI SAI", `Đáp án đúng là ${alphabet[correctIndex]}`, false, true);
+                }
+
+                // Lưu lịch sử
+                gameState.answersRecord.push({
+                    qNum: gameState.currentIndex + 1,
+                    question: qData.q,
+                    userAnsStr: alphabet[selectedIndex] + ". " + qData.options[selectedIndex],
+                    correctAnsStr: alphabet[correctIndex] + ". " + qData.options[correctIndex],
+                    isCorrect: isCorrect
+                });
+
+            }, 800); // Đợi 0.8s tạo cảm giác hồi hộp
+        }
+
+        // --- LIFELINES ---
+        function useLifeline(type) {
+            if (gameState.isAnswering || gameState.lifelines[type]) return;
+            
+            let qData = questionsDB[gameState.currentIndex];
+            let correctIndex = qData.ans;
+            
+            gameState.lifelines[type] = true;
+            
+            if (type === '50') {
+                document.getElementById('btn-50').classList.add('used');
+                let wrongIndices = [0,1,2,3].filter(i => i !== correctIndex);
+                // Randomly hide 2 wrong options
+                wrongIndices.sort(() => 0.5 - Math.random());
+                document.getElementById(`opt-${wrongIndices[0]}`).classList.add('hidden-option');
+                document.getElementById(`opt-${wrongIndices[0]}`).classList.add('disabled');
+                document.getElementById(`opt-${wrongIndices[1]}`).classList.add('hidden-option');
+                document.getElementById(`opt-${wrongIndices[1]}`).classList.add('disabled');
+            } 
+            else if (type === 'aud') {
+                document.getElementById('btn-aud').classList.add('used');
+                let percs = [0,0,0,0];
+                percs[correctIndex] = Math.floor(Math.random() * 30) + 50; // 50-80%
+                let remain = 100 - percs[correctIndex];
+                let wrongIndices = [0,1,2,3].filter(i => i !== correctIndex);
+                percs[wrongIndices[0]] = Math.floor(Math.random() * (remain - 2)) + 1;
+                remain -= percs[wrongIndices[0]];
+                percs[wrongIndices[1]] = Math.floor(Math.random() * (remain - 1)) + 1;
+                percs[wrongIndices[2]] = remain - percs[wrongIndices[1]];
+                
+                let text = `Khán giả bình chọn:<br>
+                A: ${percs[0]}% &nbsp;&nbsp;|&nbsp;&nbsp; B: ${percs[1]}% <br>
+                C: ${percs[2]}% &nbsp;&nbsp;|&nbsp;&nbsp; D: ${percs[3]}%`;
+                showModal("Ý KIẾN KHÁN GIẢ", text, true, false);
+            }
+            else if (type === 'call') {
+                document.getElementById('btn-call').classList.add('used');
+                showModal("GỌI ĐIỆN CHO NGƯỜI THÂN", `📞 Người thân của bạn nói: "Chào con, bố nghĩ đáp án đúng có vẻ là <strong>${alphabet[correctIndex]}</strong> con ạ. Tự tin lên nhé!"`, true, false);
+            }
+            else if (type === 'wise') {
+                document.getElementById('btn-wise').classList.add('used');
+                showModal("Ý KIẾN NHÀ THÔNG THÁI", `🧙‍♂️ Cố vấn phân tích: "Dựa vào phương pháp thay thế và tính toán năng lượng, đáp án chính xác 100% là <strong>${alphabet[correctIndex]}</strong>."`, true, false);
+            }
+        }
+
+        // --- MODAL & FLOW CONTROL ---
+        let autoNextTimeout = null;
+        function showModal(title, text, isSuccess, isAnswerFeedback) {
+            let tEl = document.getElementById("modal-title");
+            tEl.innerText = title;
+            tEl.className = "modal-title " + (isSuccess ? "success" : "error");
+            document.getElementById("modal-text").innerHTML = text;
+            
+            let btn = document.getElementById("modal-btn");
+            if (isAnswerFeedback) {
+                btn.style.display = "none";
+                autoNextTimeout = setTimeout(() => {
+                    closeModal();
+                    gameState.currentIndex++;
+                    loadQuestion();
+                }, 2000); // Tự động chuyển câu sau 2s
+            } else {
+                btn.style.display = "inline-block";
+            }
+            
+            document.getElementById("modal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
+            if(autoNextTimeout) {
+                clearTimeout(autoNextTimeout);
+                autoNextTimeout = null;
+            }
+        }
+
+        // --- END GAME & STORAGE ---
+        function endGame() {
+            clearInterval(gameState.timerInterval);
+            
+            let now = new Date();
+            let submitTimeStr = now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes() + " " + now.getDate() + "/" + (now.getMonth()+1) + "/" + now.getFullYear();
+            let durationStr = formatTime(gameState.elapsedSeconds);
+
+            // Lấp đầy UI Kết quả
+            document.getElementById("res-name").innerText = gameState.name;
+            document.getElementById("res-class").innerText = gameState.className;
+            document.getElementById("res-correct").innerText = gameState.correctCount;
+            document.getElementById("res-score").innerText = gameState.score;
+            document.getElementById("res-time").innerText = durationStr;
+
+            let reviewHTML = "";
+            gameState.answersRecord.forEach(rec => {
+                let statusClass = rec.isCorrect ? "correct-row" : "wrong-row";
+                let statusText = rec.isCorrect ? "<span style='color:var(--correct)'>ĐÚNG</span>" : "<span style='color:var(--wrong)'>SAI</span>";
+                reviewHTML += `
+                    <div class="review-item ${statusClass}">
+                        <strong>Câu ${rec.qNum}:</strong> ${rec.question}<br>
+                        - Bạn chọn: ${rec.userAnsStr} (${statusText})<br>
+                        ${!rec.isCorrect ? `- Đáp án đúng: ${rec.correctAnsStr}` : ""}
+                    </div>
+                `;
+            });
+            document.getElementById("review-list").innerHTML = reviewHTML;
+
+            // Lưu LocalStorage
+            let record = {
+                id: Date.now(),
+                name: gameState.name,
+                cls: gameState.className,
+                correct: gameState.correctCount,
+                score: gameState.score,
+                submitTime: submitTimeStr,
+                duration: durationStr
+            };
+            
+            let allRecords = JSON.parse(localStorage.getItem('ALTP_Records')) || [];
+            allRecords.push(record);
+            localStorage.setItem('ALTP_Records', JSON.stringify(allRecords));
+
+            switchScreen('screen-result');
+        }
+
+        function showLeaderboard() {
+            let allRecords = JSON.parse(localStorage.getItem('ALTP_Records')) || [];
+            // Sắp xếp: Điểm giảm dần, thời gian tăng dần
+            allRecords.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.duration.localeCompare(b.duration);
+            });
+
+            let tbody = document.getElementById("lb-body");
+            tbody.innerHTML = "";
+            
+            if (allRecords.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='7'>Chưa có dữ liệu</td></tr>";
+            } else {
+                allRecords.forEach((rec, index) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${rec.name}</td>
+                            <td>${rec.cls}</td>
+                            <td>${rec.correct}</td>
+                            <td style="color:var(--gold); font-weight:bold;">${rec.score}</td>
+                            <td>${rec.submitTime}</td>
+                            <td>${rec.duration}</td>
+                        </tr>
+                    `;
+                });
+            }
+            switchScreen('screen-leaderboard');
+        }
+
+        function resetGame() {
+            document.getElementById("studentName").value = "";
+            document.getElementById("studentClass").value = "";
+            switchScreen('screen-login');
+        }
+
+        function clearLeaderboard() {
+            if(confirm("Bạn có chắc chắn muốn xóa toàn bộ bảng tổng hợp?")) {
+                localStorage.removeItem('ALTP_Records');
+                showLeaderboard();
+            }
+        }
+    </script>
+</body>
+</html>

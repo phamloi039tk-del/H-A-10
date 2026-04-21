@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ai Là Triệu Phú - Hóa Học 10 (Chương 3 & 4)</title>
+    <style>
+        :root {
+            --primary-blue: #001f3f;
+            --accent-gold: #ffd700;
+            --white: #ffffff;
+            --correct-green: #2ecc71;
+            --wrong-red: #e74c3c;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        #app {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Login Screen */
+        .login-box {
+            background: var(--glass-bg);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid var(--accent-gold);
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 1.1rem;
+        }
+
+        .btn {
+            background: var(--accent-gold);
+            color: var(--primary-blue);
+            border: none;
+            padding: 15px 30px;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--accent-gold);
+        }
+
+        /* Game Screen */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .lifelines {
+            display: flex;
+            gap: 10px;
+        }
+
+        .lifeline-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-gold);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .lifeline-btn.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        .question-container {
+            width: 100%;
+            background: var(--glass-bg);
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid var(--accent-gold);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .answer-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--white);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+
+        .answer-btn:hover:not(.disabled) {
+            background: var(--accent-gold);
+            color: var(--primary-blue);
+        }
+
+        .answer-btn.correct {
+            background: var(--correct-green) !important;
+            border-color: var(--correct-green);
+        }
+
+        .answer-btn.wrong {
+            background: var(--wrong-red) !important;
+            border-color: var(--wrong-red);
+        }
+
+        /* Result Screen & Table */
+        .summary-table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--glass-bg);
+            margin-bottom: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(0,0,0,0.3);
+            color: var(--accent-gold);
+        }
+
+        /* Footer */
+        footer {
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #ccc;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto;
+        }
+
+        /* Helpers */
+        .hidden { display: none !important; }
+        
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 100;
+            text-align: center;
+            min-width: 300px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 99;
+        }
+
+        @media (max-width: 600px) {
+            .answers-grid { grid-template-columns: 1fr; }
+            .header { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <!-- SCREEN 1: LOGIN -->
+        <div id="screen-login" class="screen active">
+            <h1 style="color: var(--accent-gold); margin-bottom: 10px;">AI LÀ TRIỆU PHÚ</h1>
+            <h2 style="margin-bottom: 30px; text-align: center;">Liên kết Hóa học & Phản ứng Oxi hóa - Khử</h2>
+            <div class="login-box">
+                <input type="text" id="student-name" placeholder="Họ và tên học sinh..." required>
+                <input type="text" id="student-class" placeholder="Lớp..." required>
+                <button class="btn" onclick="startGame()">Bắt đầu cuộc thi</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: GAME -->
+        <div id="screen-game" class="screen">
+            <div class="header">
+                <div id="progress-info">Câu hỏi: <span id="current-q-num">1</span>/20</div>
+                <div class="lifelines">
+                    <button class="lifeline-btn" id="life-5050" onclick="use5050()">50:50</button>
+                    <button class="lifeline-btn" id="life-audience" onclick="useAudience()">Khán giả</button>
+                    <button class="lifeline-btn hidden" id="life-phone" onclick="usePhone()">Gọi điện</button>
+                    <button class="lifeline-btn hidden" id="life-wise" onclick="useWise()">Nhà thông thái</button>
+                </div>
+            </div>
+            
+            <div class="question-container">
+                <h3 id="question-text">Đang tải câu hỏi...</h3>
+            </div>
+
+            <div class="answers-grid" id="answers-grid">
+                <button class="answer-btn" onclick="checkAnswer(0)">A. <span class="text"></span></button>
+                <button class="answer-btn" onclick="checkAnswer(1)">B. <span class="text"></span></button>
+                <button class="answer-btn" onclick="checkAnswer(2)">C. <span class="text"></span></button>
+                <button class="answer-btn" onclick="checkAnswer(3)">D. <span class="text"></span></button>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: RESULT -->
+        <div id="screen-result" class="screen">
+            <h2 style="color: var(--accent-gold);">KẾT QUẢ CUỘC THI</h2>
+            <div id="final-score" style="font-size: 1.5rem; margin: 20px 0;"></div>
+            
+            <div class="summary-table-container">
+                <table id="history-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Họ tên</th>
+                            <th>Lớp</th>
+                            <th>Số câu đúng</th>
+                            <th>Điểm</th>
+                            <th>Ngày nộp</th>
+                            <th>Thời gian làm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body"></tbody>
+                </table>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn" onclick="resetGame()">Làm lại bài</button>
+                <button class="btn" style="background: var(--wrong-red); color: white;" onclick="clearHistory()">Xóa bảng tổng hợp</button>
+            </div>
+        </div>
+    </div>
+
+    <footer id="footer">
+        GIÁO VIÊN THIẾT KẾ: PHẠM LỢI - TRƯỜNG PTDTNT THPT THAN UYÊN
+    </footer>
+
+    <div id="modal-container" class="hidden">
+        <div class="overlay"></div>
+        <div class="modal" id="modal-content"></div>
+    </div>
+
+    <script>
+        // --- DATA CÂU HỎI (Cập nhật từ bài 14 & 15) ---
+        const questions = [
+            // NHẬN BIẾT (30% - 6 câu)
+            { q: "Số oxi hoá là điện tích quy ước của nguyên tử trong phân tử khi coi tất cả các liên kết đều là liên kết:", a: ["Cộng hoá trị", "Ion", "Hydrogen", "Van der Waals"], c: 1 },
+            { q: "Trong đơn chất, số oxi hoá của nguyên tử luôn bằng:", a: ["+1", "-1", "0", "Bằng số electron lớp ngoài cùng"], c: 2 },
+            { q: "Chất khử là chất có khả năng:", a: ["Nhường electron", "Nhận electron", "Tạo liên kết hydrogen", "Nhận proton"], c: 0 },
+            { q: "Dấu hiệu để nhận biết một phản ứng oxi hoá - khử là dựa trên sự thay đổi của:", a: ["Số khối", "Số oxi hoá", "Màu sắc dung dịch", "Số mol"], c: 1 },
+            { q: "Liên kết hoá học được hình thành bằng một hay nhiều cặp electron dùng chung là:", a: ["Liên kết ion", "Liên kết cộng hoá trị", "Liên kết kim loại", "Liên kết hydrogen"], c: 1 },
+            { q: "Quá trình oxi hoá là quá trình:", a: ["Chất khử nhận electron", "Chất khử nhường electron", "Chất oxi hoá nhận electron", "Chất oxi hoá nhường electron"], c: 1 },
+
+            // THÔNG HIỂU (30% - 6 câu)
+            { q: "Số oxi hoá của sulfur trong hợp chất SO<sub>2</sub> là:", a: ["+2", "+4", "+6", "-2"], c: 1 },
+            { q: "Trong hợp chất, số oxi hoá của oxygen thông thường là bao nhiêu?", a: ["0", "+2", "-2", "-1"], c: 2 },
+            { q: "Phản ứng nào sau đây là phản ứng oxi hoá - khử?", a: ["CaO + H<sub>2</sub>O → Ca(OH)<sub>2</sub>", "CaCO<sub>3</sub> → CaO + CO<sub>2</sub>", "2Ca + O<sub>2</sub> → 2CaO", "HCl + NaOH → NaCl + H<sub>2</sub>O"], c: 2 },
+            { q: "Số oxi hoá của nguyên tử Cl trong phân tử HClO<sub>4</sub> là:", a: ["+1", "+3", "+5", "+7"], c: 3 },
+            { q: "Cho phản ứng: CuO + H<sub>2</sub> → Cu + H<sub>2</sub>O. Chất đóng vai trò chất khử là:", a: ["CuO", "Cu", "H<sub>2</sub>", "H<sub>2</sub>O"], c: 2 },
+            { q: "Trong ion đơn nguyên tử, số oxi hoá của nguyên tử bằng:", a: ["0", "Số hiệu nguyên tử", "Điện tích ion", "Số khối"], c: 2 },
+
+            // VẬN DỤNG THẤP (20% - 4 câu)
+            { q: "Cho dãy các oxide: Na<sub>2</sub>O, MgO, Al<sub>2</sub>O<sub>3</sub>, SiO<sub>2</sub>. Theo chiều này, độ phân cực của liên kết biến đổi như thế nào?", a: ["Tăng dần", "Giảm dần", "Không thay đổi", "Biến đổi không quy luật"], c: 1 },
+            { q: "Dựa vào hiệu độ âm điện, liên kết trong phân tử NH<sub>3</sub> (N: 3,04; H: 2,2) thuộc loại nào?", a: ["Cộng hoá trị không phân cực", "Cộng hoá trị phân cực", "Liên kết ion", "Liên kết cho-nhận"], c: 1 },
+            { q: "Cần bao nhiêu electron để nguyên tử S (Z=16) chuyển thành ion S<sup>2-</sup>?", a: ["Nhường 2 electron", "Nhận 2 electron", "Nhường 6 electron", "Nhận 6 electron"], c: 1 },
+            { q: "Trong hiện tượng sấm sét, nitrogen phản ứng với oxygen tạo thành khí NO. Đây là phản ứng:", a: ["Oxi hoá - khử", "Hoá hợp không oxi hoá khử", "Trao đổi", "Trung hoà"], c: 0 },
+
+            // VẬN DỤNG CAO (20% - 4 câu)
+            { q: "Hệ số tối giản của H<sub>2</sub>SO<sub>4</sub> trong phản ứng: FeSO<sub>4</sub> + KMnO<sub>4</sub> + H<sub>2</sub>SO<sub>4</sub> → Fe<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub> + K<sub>2</sub>SO<sub>4</sub> + MnSO<sub>4</sub> + H<sub>2</sub>O là:", a: ["4", "8", "10", "16"], c: 1 },
+            { q: "Cho 2,34 gam kim loại M (hoá trị n) tác dụng với H<sub>2</sub>SO<sub>4</sub> đặc nóng thu được 3,2227 L khí SO<sub>2</sub> (đkc). Kim loại M là:", a: ["Zn", "Mg", "Al", "Fe"], c: 1 },
+            { q: "Tổng hệ số cân bằng (số nguyên tối giản) của phản ứng: ZnS + O<sub>2</sub> → ZnO + SO<sub>2</sub> là:", a: ["7", "9", "11", "13"], c: 1 },
+            { q: "Anion AB<sub>3</sub><sup>2-</sup> có tổng số electron là 42. Biết số proton = số neutron ở cả A và B. Cấu tạo của anion này phù hợp với quy tắc octet là:", a: ["SO<sub>3</sub><sup>2-</sup>", "CO<sub>3</sub><sup>2-</sup>", "SiO<sub>3</sub><sup>2-</sup>", "NO<sub>3</sub><sup>-</sup>"], c: 1 }
+        ];
+
+        // --- GAME STATE ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userName = "";
+        let userClass = "";
+        let gameStartTime = null;
+        let lifelinesUsed = { '5050': false, 'audience': false, 'phone': false, 'wise': false };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type, duration) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const sounds = {
+            correct: () => { playTone(523.25, 'sine', 0.2); setTimeout(() => playTone(659.25, 'sine', 0.3), 100); },
+            wrong: () => { playTone(220, 'sawtooth', 0.5); },
+            click: () => { playTone(440, 'triangle', 0.05); },
+            win: () => { [523, 659, 783, 1046].forEach((f, i) => setTimeout(() => playTone(f, 'sine', 0.4), i * 150)); }
+        };
+
+        function startGame() {
+            userName = document.getElementById('student-name').value.trim();
+            userClass = document.getElementById('student-class').value.trim();
+
+            if (!userName || !userClass) {
+                showModal("Vui lòng nhập họ tên và lớp!");
+                return;
+            }
+
+            sounds.click();
+            gameStartTime = new Date();
+            showScreen('screen-game');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            const qNum = currentQuestionIndex + 1;
+            document.getElementById('current-q-num').innerText = qNum;
+            document.getElementById('question-text').innerHTML = q.q;
+            
+            // Cập nhật quyền trợ giúp theo luật
+            updateLifelinesVisibility(qNum);
+
+            const buttons = document.querySelectorAll('.answer-btn');
+            buttons.forEach((btn, index) => {
+                btn.classList.remove('correct', 'wrong', 'hidden', 'disabled');
+                btn.querySelector('.text').innerHTML = q.a[index];
+            });
+        }
+
+        function updateLifelinesVisibility(qNum) {
+            // Mặc định 5050 và Khán giả luôn có
+            if (qNum >= 11) {
+                document.getElementById('life-phone').classList.remove('hidden');
+            }
+            if (qNum >= 16) {
+                document.getElementById('life-wise').classList.remove('hidden');
+            }
+        }
+
+        function checkAnswer(index) {
+            const q = questions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.answer-grid .answer-btn'); // Sửa lại selector nếu cần
+            const currentButtons = document.querySelectorAll('.answer-btn');
+            
+            currentButtons.forEach(b => b.classList.add('disabled'));
+
+            if (index === q.c) {
+                sounds.correct();
+                currentButtons[index].classList.add('correct');
+                score++;
+                showModal("CHÚC MỪNG BẠN TRẢ LỜI ĐÚNG", true);
+            } else {
+                sounds.wrong();
+                currentButtons[index].classList.add('wrong');
+                currentButtons[q.c].classList.add('correct');
+                showModal("RẤT TIẾC BẠN ĐÃ TRẢ LỜI SAI", true);
+            }
+
+            setTimeout(() => {
+                hideModal();
+                currentQuestionIndex++;
+                if (currentQuestionIndex < questions.length) {
+                    loadQuestion();
+                } else {
+                    endGame();
+                }
+            }, 1800);
+        }
+
+        function showModal(text, autoHide = false) {
+            const modal = document.getElementById('modal-container');
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `<h3>${text}</h3>` + (autoHide ? '' : `<br><button class="btn" onclick="hideModal()">Đóng</button>`);
+            modal.classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('modal-container').classList.add('hidden');
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        // --- LIFELINES ---
+        function use5050() {
+            if (lifelinesUsed['5050']) return;
+            const q = questions[currentQuestionIndex];
+            const wrongIndices = [0, 1, 2, 3].filter(i => i !== q.c);
+            const toHide = wrongIndices.sort(() => Math.random() - 0.5).slice(0, 2);
+            
+            const buttons = document.querySelectorAll('.answer-btn');
+            toHide.forEach(idx => buttons[idx].classList.add('hidden'));
+            
+            lifelinesUsed['5050'] = true;
+            document.getElementById('life-5050').classList.add('used');
+            sounds.click();
+        }
+
+        function useAudience() {
+            if (lifelinesUsed['audience']) return;
+            const q = questions[currentQuestionIndex];
+            const labels = ['A', 'B', 'C', 'D'];
+            let result = labels[q.c];
+            if (Math.random() > 0.8) result = labels[Math.floor(Math.random() * 4)];
+            
+            showModal(`Khán giả: 75% tin rằng đáp án ${result} là chính xác.`);
+            lifelinesUsed['audience'] = true;
+            document.getElementById('life-audience').classList.add('used');
+            sounds.click();
+        }
+
+        function usePhone() {
+            if (lifelinesUsed['phone'] || currentQuestionIndex + 1 < 11) return;
+            const q = questions[currentQuestionIndex];
+            showModal(`Người thân: "Câu này khó quá, nhưng mình nghĩ là ${['A', 'B', 'C', 'D'][q.c]} đấy!"`);
+            lifelinesUsed['phone'] = true;
+            document.getElementById('life-phone').classList.add('used');
+            sounds.click();
+        }
+
+        function useWise() {
+            if (lifelinesUsed['wise'] || currentQuestionIndex + 1 < 16) return;
+            const q = questions[currentQuestionIndex];
+            showModal(`Nhà thông thái: "Dựa vào bản chất electron, đáp án chính xác nhất phải là ${['A', 'B', 'C', 'D'][q.c]}."`);
+            lifelinesUsed['wise'] = true;
+            document.getElementById('life-wise').classList.add('used');
+            sounds.click();
+        }
+
+        // --- DATA ---
+        function endGame() {
+            sounds.win();
+            const now = new Date();
+            const diff = now - gameStartTime;
+            const min = Math.floor(diff / 60000);
+            const sec = Math.floor((diff % 60000) / 1000);
+
+            const entry = {
+                name: userName,
+                class: userClass,
+                correct: score,
+                points: (score * 0.5).toFixed(1),
+                date: now.toLocaleString('vi-VN'),
+                time: `${min}p ${sec}s`
+            };
+
+            let results = JSON.parse(localStorage.getItem('millionaire_chem_results') || '[]');
+            results.push(entry);
+            localStorage.setItem('millionaire_chem_results', JSON.stringify(results));
+
+            renderHistory();
+            document.getElementById('final-score').innerText = `Chúc mừng ${userName}! Bạn đạt ${score}/20 câu. Điểm: ${(score * 0.5).toFixed(1)}`;
+            showScreen('screen-result');
+        }
+
+        function renderHistory() {
+            const results = JSON.parse(localStorage.getItem('millionaire_chem_results') || '[]');
+            const tbody = document.getElementById('history-body');
+            tbody.innerHTML = results.map((r, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${r.name}</td>
+                    <td>${r.class}</td>
+                    <td>${r.correct}/20</td>
+                    <td>${r.points}</td>
+                    <td>${r.date}</td>
+                    <td>${r.time}</td>
+                </tr>
+            `).join('');
+        }
+
+        function clearHistory() {
+            if (confirm("Xóa toàn bộ kết quả lưu trữ?")) {
+                localStorage.removeItem('millionaire_chem_results');
+                renderHistory();
+            }
+        }
+
+        function resetGame() {
+            currentQuestionIndex = 0;
+            score = 0;
+            lifelinesUsed = { '5050': false, 'audience': false, 'phone': false, 'wise': false };
+            document.querySelectorAll('.lifeline-btn').forEach(b => {
+                b.classList.remove('used');
+                if (b.id === 'life-phone' || b.id === 'life-wise') b.classList.add('hidden');
+            });
+            showScreen('screen-login');
+        }
+
+        window.onload = renderHistory;
+    </script>
+</body>
+</html>

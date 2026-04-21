@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ai Là Triệu Phú - Hóa Học THPT</title>
+    <style>
+        :root {
+            --bg-dark: #020a1c;
+            --bg-panel: #0d214f;
+            --text-main: #ffffff;
+            --gold: #ffcc00;
+            --gold-hover: #ffdb4d;
+            --btn-bg: #091a40;
+            --btn-border: #3a68b8;
+            --correct: #27ae60;
+            --wrong: #e74c3c;
+            --selected: #f39c12;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #051433 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            text-align: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--gold);
+            border-bottom: 1px solid var(--btn-border);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        /* SCREENS */
+        .screen {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* INTRO SCREEN */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-container h1 {
+            font-size: 3rem;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .login-box {
+            background: var(--bg-panel);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--btn-border);
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--btn-border);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--gold);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #1e4592, var(--btn-bg));
+            color: white;
+            border: 2px solid var(--btn-border);
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: linear-gradient(to bottom, #2a5bbd, #123170);
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(255, 204, 0, 0.3);
+        }
+
+        /* GAME SCREEN */
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: var(--bg-panel);
+            padding: 15px 20px;
+            border-radius: 15px;
+            border: 1px solid var(--btn-border);
+        }
+
+        .stat-box {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--gold);
+        }
+
+        .lifelines {
+            display: flex;
+            gap: 15px;
+        }
+
+        .lifeline-btn {
+            background: var(--btn-bg);
+            border: 2px solid var(--gold);
+            color: var(--gold);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            position: relative;
+        }
+
+        .lifeline-btn:hover:not(.used):not(.locked) {
+            background: var(--gold);
+            color: var(--bg-dark);
+            transform: scale(1.1);
+        }
+
+        .lifeline-btn.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: gray;
+            color: gray;
+        }
+
+        .lifeline-btn.locked {
+            display: none !important;
+        }
+
+        .lifeline-btn .tooltip {
+            position: absolute;
+            bottom: -30px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            display: none;
+            pointer-events: none;
+        }
+
+        .lifeline-btn:hover .tooltip { display: block; }
+
+        .question-box {
+            background: linear-gradient(to right, #091a40, #123170, #091a40);
+            border: 2px solid var(--btn-border);
+            border-radius: 50px;
+            padding: 30px;
+            text-align: center;
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            line-height: 1.6;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .option {
+            background: linear-gradient(to right, #091a40, #123170, #091a40);
+            border: 2px solid var(--btn-border);
+            border-radius: 30px;
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover:not(.disabled) {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+        }
+
+        .option.selected {
+            background: var(--selected);
+            border-color: var(--gold);
+            color: white;
+        }
+
+        .option.correct {
+            background: var(--correct);
+            border-color: #2ecc71;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .option.wrong {
+            background: var(--wrong);
+            border-color: #c0392b;
+            color: white;
+        }
+
+        .option.disabled {
+            pointer-events: none;
+        }
+
+        .option.hidden-option {
+            visibility: hidden;
+        }
+
+        .opt-letter {
+            color: var(--gold);
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .option.selected .opt-letter, 
+        .option.correct .opt-letter, 
+        .option.wrong .opt-letter {
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--bg-panel);
+            border: 3px solid var(--gold);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
+            animation: bounceIn 0.5s;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .modal-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .modal-title.success { color: var(--correct); }
+        .modal-title.error { color: var(--wrong); }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+
+        /* RESULT & LEADERBOARD */
+        .result-box, .leaderboard-box {
+            background: var(--bg-panel);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--btn-border);
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--gold);
+        }
+
+        .result-header h2 { font-size: 2rem; }
+        
+        .review-list {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .review-item {
+            background: rgba(0,0,0,0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 5px solid gray;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .review-item.correct-row { border-color: var(--correct); }
+        .review-item.wrong-row { border-color: var(--wrong); }
+
+        .review-item strong { color: var(--gold); }
+
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid var(--btn-border);
+        }
+
+        th {
+            background: rgba(255, 204, 0, 0.2);
+            color: var(--gold);
+        }
+
+        tr:nth-child(even) { background: rgba(0,0,0,0.2); }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-group .btn { width: auto; min-width: 150px; }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--btn-border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .question-box { font-size: 1.1rem; padding: 20px; border-radius: 20px; }
+            .option { border-radius: 15px; padding: 12px 20px; }
+            .game-header { flex-direction: column; gap: 15px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        GIÁO VIÊN THIẾT KẾ: PHẠM LỢI - TRƯỜNG PTDTNT THPT THAN UYÊN
+    </div>
+
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="screen-login" class="screen active">
+        <div class="logo-container">
+            <h1>AI LÀ TRIỆU PHÚ</h1>
+            <p style="color: var(--gold); font-size: 1.2rem;">Chuyên đề: Nhóm Halogen</p>
+        </div>
+        <div class="login-box">
+            <div class="input-group">
+                <label for="studentName">Họ và tên học sinh:</label>
+                <input type="text" id="studentName" placeholder="Nhập họ tên của bạn..." autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="studentClass">Lớp:</label>
+                <input type="text" id="studentClass" placeholder="Nhập lớp (VD: 10A1)..." autocomplete="off">
+            </div>
+            <button class="btn" onclick="startGame()">BẮT ĐẦU THI</button>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH TRÒ CHƠI -->
+    <div id="screen-game" class="screen">
+        <div class="game-header">
+            <div class="stat-box">Câu: <span id="q-number">1/20</span></div>
+            <div class="lifelines">
+                <button class="lifeline-btn" id="btn-50" onclick="useLifeline('50')">
+                    50
+                    <span class="tooltip">50:50</span>
+                </button>
+                <button class="lifeline-btn" id="btn-aud" onclick="useLifeline('aud')">
+                    👥
+                    <span class="tooltip">Khán giả</span>
+                </button>
+                <button class="lifeline-btn locked" id="btn-call" onclick="useLifeline('call')">
+                    📞
+                    <span class="tooltip">Gọi người thân</span>
+                </button>
+                <button class="lifeline-btn locked" id="btn-wise" onclick="useLifeline('wise')">
+                    🧙‍♂️
+                    <span class="tooltip">Nhà thông thái</span>
+                </button>
+            </div>
+            <div class="stat-box">Thời gian: <span id="timer">00:00</span></div>
+        </div>
+
+        <div class="question-box" id="question-text">
+            Nội dung câu hỏi sẽ hiển thị ở đây...
+        </div>
+
+        <div class="options-grid" id="options-container">
+            <div class="option" onclick="selectOption(0)">
+                <span class="opt-letter">A.</span> <span id="opt-0-text">Đáp án A</span>
+            </div>
+            <div class="option" onclick="selectOption(1)">
+                <span class="opt-letter">B.</span> <span id="opt-1-text">Đáp án B</span>
+            </div>
+            <div class="option" onclick="selectOption(2)">
+                <span class="opt-letter">C.</span> <span id="opt-2-text">Đáp án C</span>
+            </div>
+            <div class="option" onclick="selectOption(3)">
+                <span class="opt-letter">D.</span> <span id="opt-3-text">Đáp án D</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH KẾT QUẢ CÁ NHÂN -->
+    <div id="screen-result" class="screen">
+        <div class="result-box">
+            <div class="result-header">
+                <h2>BÁO CÁO KẾT QUẢ</h2>
+                <p style="margin-top: 10px; font-size: 1.1rem;">Học sinh: <span id="res-name" style="color:white"></span> - Lớp: <span id="res-class" style="color:white"></span></p>
+                <p style="margin-top: 5px; font-size: 1.2rem;">Số câu đúng: <span id="res-correct" style="color:#2ecc71"></span>/20 | Điểm: <span id="res-score" style="color:#f39c12"></span></p>
+                <p style="margin-top: 5px; font-size: 1rem;">Thời gian làm bài: <span id="res-time" style="color:white"></span></p>
+            </div>
+            <h3 style="margin-bottom: 15px; border-bottom: 1px solid var(--btn-border); padding-bottom: 10px;">Chi tiết đáp án:</h3>
+            <div class="review-list" id="review-list">
+                <!-- Chi tiết từng câu đổ vào đây -->
+            </div>
+            <div class="btn-group" style="margin-top: 20px;">
+                <button class="btn" onclick="showLeaderboard()">XEM BẢNG TỔNG HỢP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH BẢNG TỔNG HỢP -->
+    <div id="screen-leaderboard" class="screen">
+        <div class="leaderboard-box">
+            <div class="result-header">
+                <h2>BẢNG TỔNG HỢP KẾT QUẢ</h2>
+            </div>
+            <div class="table-responsive">
+                <table id="lb-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Họ và tên</th>
+                            <th>Lớp</th>
+                            <th>Số câu đúng</th>
+                            <th>Điểm</th>
+                            <th>TG Nộp</th>
+                            <th>TG Làm bài</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lb-body">
+                        <!-- Dữ liệu bảng -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-group">
+                <button class="btn" onclick="resetGame()">LÀM LẠI BÀI</button>
+                <button class="btn" style="background: var(--wrong); border-color: #c0392b;" onclick="clearLeaderboard()">XÓA BẢNG</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL THÔNG BÁO -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-title">THÔNG BÁO</div>
+            <div class="modal-text" id="modal-text">Nội dung</div>
+            <button class="btn" id="modal-btn" onclick="closeModal()">TIẾP TỤC</button>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu ngân hàng câu hỏi - Chuyên đề: Nhóm Halogen
+        const questionsDB = [
+            // Nhận biết (6 câu)
+            {
+                q: "Các nguyên tố nhóm halogen thuộc nhóm nào trong bảng tuần hoàn hoá học?",
+                options: [
+                    "Nhóm VIA.",
+                    "Nhóm VIIA.",
+                    "Nhóm VA.",
+                    "Nhóm VIIIA."
+                ],
+                ans: 1
+            },
+            {
+                q: "Trạng thái và màu sắc của đơn chất Bromine (Br<sub>2</sub>) ở điều kiện thường là gì?",
+                options: [
+                    "Khí, màu vàng lục.",
+                    "Lỏng, màu nâu đỏ.",
+                    "Rắn, màu tím đen.",
+                    "Khí, màu lục nhạt."
+                ],
+                ans: 1
+            },
+            {
+                q: "Nguyên tử của các nguyên tố halogen có bao nhiêu electron ở lớp ngoài cùng?",
+                options: ["5 electron.", "6 electron.", "7 electron.", "8 electron."],
+                ans: 2
+            },
+            {
+                q: "Trong tự nhiên, các nguyên tố halogen tồn tại chủ yếu ở dạng nào?",
+                options: [
+                    "Chỉ tồn tại ở dạng đơn chất.",
+                    "Chỉ tồn tại ở dạng hợp chất.",
+                    "Vừa ở dạng đơn chất vừa ở dạng hợp chất.",
+                    "Tồn tại dưới dạng các hợp kim."
+                ],
+                ans: 1
+            },
+            {
+                q: "Đơn chất halogen nào sau đây là chất oxi hoá mạnh nhất?",
+                options: ["Fluorine (F<sub>2</sub>).", "Chlorine (Cl<sub>2</sub>).", "Bromine (Br<sub>2</sub>).", "Iodine (I<sub>2</sub>)."],
+                ans: 0
+            },
+            {
+                q: "Hydrohalic acid nào sau đây được dùng làm nguyên liệu để khắc chữ lên bề mặt thuỷ tinh?",
+                options: ["Hydrochloric acid (HCl).", "Hydrobromic acid (HBr).", "Hydrofluoric acid (HF).", "Hydroiodic acid (HI)."],
+                ans: 2
+            },
+
+            // Thông hiểu (6 câu)
+            {
+                q: "Từ F<sub>2</sub> đến I<sub>2</sub>, nhiệt độ nóng chảy và nhiệt độ sôi của các halogen tăng dần chủ yếu là do nguyên nhân nào?",
+                options: [
+                    "Độ âm điện của các nguyên tử tăng dần.",
+                    "Tương tác van der Waals và khối lượng phân tử tăng.",
+                    "Tính phi kim của các nguyên tố tăng dần.",
+                    "Bán kính nguyên tử của các halogen giảm dần."
+                ],
+                ans: 1
+            },
+            {
+                q: "Phản ứng hoá học giữa H<sub>2</sub> và Cl<sub>2</sub> xảy ra mãnh liệt và có thể gây nổ trong điều kiện nào sau đây?",
+                options: [
+                    "Ở nhiệt độ phòng và trong bóng tối.",
+                    "Được chiếu sáng hoặc đun nóng.",
+                    "Ở nhiệt độ -200&deg;C với xúc tác Pt.",
+                    "Dưới áp suất cao và nhiệt độ âm."
+                ],
+                ans: 1
+            },
+            {
+                q: "Trong phản ứng thuận nghịch: Cl<sub>2</sub> + H<sub>2</sub>O &harr; HCl + HClO. Khí chlorine đóng vai trò là gì?",
+                options: [
+                    "Chỉ là chất oxi hoá.",
+                    "Chỉ là chất khử.",
+                    "Vừa là chất oxi hoá, vừa là chất khử.",
+                    "Là chất xúc tác cho phản ứng."
+                ],
+                ans: 2
+            },
+            {
+                q: "Nước Javel (dùng để tẩy rửa, sát trùng) là hỗn hợp gồm các chất nào sau đây?",
+                options: [
+                    "NaCl, NaClO<sub>3</sub> và H<sub>2</sub>O.",
+                    "KCl, KClO và H<sub>2</sub>O.",
+                    "NaCl, NaClO và H<sub>2</sub>O.",
+                    "HCl, HClO và H<sub>2</sub>O."
+                ],
+                ans: 2
+            },
+            {
+                q: "Giải thích tại sao trong các hợp chất, nguyên tố fluorine (F) chỉ có số oxi hoá là -1 trong khi các halogen khác có thể có mức +1, +3, +5, +7?",
+                options: [
+                    "Do F có bán kính nguyên tử lớn nhất.",
+                    "Do F là chất khí ở điều kiện thường.",
+                    "Do F có độ âm điện lớn nhất trong bảng tuần hoàn.",
+                    "Do F không phản ứng được với oxygen."
+                ],
+                ans: 2
+            },
+            {
+                q: "Nhỏ vài giọt dung dịch AgNO<sub>3</sub> vào ống nghiệm chứa dung dịch NaBr. Hiện tượng quan sát được là gì?",
+                options: [
+                    "Xuất hiện kết tủa màu vàng nhạt.",
+                    "Xuất hiện kết tủa trắng.",
+                    "Xuất hiện kết tủa màu vàng đậm.",
+                    "Không có hiện tượng gì xảy ra."
+                ],
+                ans: 0
+            },
+
+            // Vận dụng thấp (4 câu)
+            {
+                q: "Khi đun nóng, khí chlorine phản ứng với dung dịch KOH đậm đặc tạo ra sản phẩm chứa các muối nào?",
+                options: [
+                    "KCl và KClO.",
+                    "KCl và KClO<sub>3</sub>.",
+                    "KCl và KClO<sub>4</sub>.",
+                    "KClO và KClO<sub>3</sub>."
+                ],
+                ans: 1
+            },
+            {
+                q: "Phương trình hoá học nào sau đây mô tả đúng phản ứng điều chế khí chlorine trong phòng thí nghiệm?",
+                options: [
+                    "2NaCl + 2H<sub>2</sub>O &rarr; 2NaOH + Cl<sub>2</sub> + H<sub>2</sub>",
+                    "MnO<sub>2</sub> + 4HCl(đặc) &rarr; MnCl<sub>2</sub> + Cl<sub>2</sub> + 2H<sub>2</sub>O",
+                    "F<sub>2</sub> + 2NaCl &rarr; 2NaF + Cl<sub>2</sub>",
+                    "2HCl &rarr; H<sub>2</sub> + Cl<sub>2</sub>"
+                ],
+                ans: 1
+            },
+            {
+                q: "Phương trình hoá học: Cl<sub>2</sub> + 2NaBr &rarr; 2NaCl + Br<sub>2</sub> chứng tỏ điều gì về tính oxi hoá?",
+                options: [
+                    "Tính oxi hoá của Br<sub>2</sub> mạnh hơn Cl<sub>2</sub>.",
+                    "Tính oxi hoá của Cl<sub>2</sub> mạnh hơn Br<sub>2</sub>.",
+                    "Tính khử của Cl<sup>-</sup> mạnh hơn Br<sup>-</sup>.",
+                    "Cl<sub>2</sub> không có tính oxi hoá."
+                ],
+                ans: 1
+            },
+            {
+                q: "Trong dãy hydrohalic acid: HF, HCl, HBr, HI. Tính acid biến đổi theo xu hướng nào từ trái sang phải?",
+                options: [
+                    "Tăng dần từ HF đến HI.",
+                    "Giảm dần từ HF đến HI.",
+                    "HF mạnh nhất, các acid còn lại bằng nhau.",
+                    "Không có quy luật rõ ràng."
+                ],
+                ans: 0
+            },
+
+            // Vận dụng cao (4 câu)
+            {
+                q: "Cho 0,1 mol KMnO<sub>4</sub> tác dụng hoàn toàn với dung dịch HCl đặc, dư theo phương trình: 2KMnO<sub>4</sub> + 16HCl &rarr; 2KCl + 2MnCl<sub>2</sub> + 5Cl<sub>2</sub> + 8H<sub>2</sub>O. Thể tích khí Cl<sub>2</sub> thu được ở điều kiện chuẩn là bao nhiêu?",
+                options: [
+                    "6,1975 L.",
+                    "5,5975 L.",
+                    "12,395 L.",
+                    "2,479 L."
+                ],
+                ans: 0
+            },
+            {
+                q: "Khí HCl hoà tan rất mạnh vào nước để tạo thành hydrochloric acid. Trong thí nghiệm thử tính tan, nước phun mạnh vào bình chứa khí HCl chứng tỏ điều gì về khí HCl?",
+                options: [
+                    "HCl nhẹ hơn không khí.",
+                    "HCl là khí độc và có màu.",
+                    "HCl tan rất nhiều trong nước, làm giảm áp suất trong bình đột ngột.",
+                    "HCl phản ứng với nước tạo ra bọt khí đẩy nước lên."
+                ],
+                ans: 2
+            },
+            {
+                q: "Một nhà máy nước sử dụng 5 mg Cl<sub>2</sub> để khử trùng 1 lít nước sinh hoạt. Cần bao nhiêu kg Cl<sub>2</sub> để khử trùng 80.000 m<sup>3</sup> nước của nhà máy này?",
+                options: [
+                    "400 kg.",
+                    "40 kg.",
+                    "4.000 kg.",
+                    "800 kg."
+                ],
+                ans: 0
+            },
+            {
+                q: "Dược chất <sup>18</sup>F-FDG dùng trong kĩ thuật chụp PET-CT (phát hiện tế bào ung thư) được tạo ra bằng cách thay thế một nhóm -OH trong phân tử chất nào bằng đồng vị phóng xạ <sup>18</sup>F?",
+                options: [
+                    "Fructose.",
+                    "Methane.",
+                    "Glucose.",
+                    "Saccharose."
+                ],
+                ans: 2
+            }
+        ];
+
+        // Biến trạng thái trò chơi
+        let gameState = {
+            name: "",
+            className: "",
+            startTime: 0,
+            timerInterval: null,
+            elapsedSeconds: 0,
+            currentIndex: 0,
+            correctCount: 0,
+            score: 0,
+            answersRecord: [],
+            isAnswering: false,
+            lifelines: { fifty: false, aud: false, call: false, wise: false }
+        };
+
+        const alphabet = ["A", "B", "C", "D"];
+
+        // --- WEB AUDIO API (Tạo âm thanh không cần file ngoài) ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTone(freq, type, duration, vol=0.1) {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playCorrectSound() {
+            initAudio();
+            playTone(523.25, 'sine', 0.15, 0.2); // C5
+            setTimeout(() => playTone(659.25, 'sine', 0.15, 0.2), 100); // E5
+            setTimeout(() => playTone(783.99, 'sine', 0.3, 0.2), 200); // G5
+            setTimeout(() => playTone(1046.50, 'sine', 0.5, 0.2), 300); // C6
+        }
+
+        function playWrongSound() {
+            initAudio();
+            playTone(300, 'sawtooth', 0.3, 0.15);
+            setTimeout(() => playTone(250, 'sawtooth', 0.5, 0.15), 250);
+        }
+
+        function playTickSound() {
+            if(!audioCtx) return;
+            playTone(800, 'square', 0.05, 0.01);
+        }
+
+        // --- CORE GAME LOGIC ---
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            const name = document.getElementById("studentName").value.trim();
+            const cls = document.getElementById("studentClass").value.trim();
+            if (!name || !cls) {
+                showModal("LỖI", "Vui lòng nhập đầy đủ Họ tên và Lớp!", false);
+                return;
+            }
+            
+            initAudio(); // Initialize audio on user gesture
+            
+            gameState = {
+                name: name,
+                className: cls,
+                startTime: Date.now(),
+                elapsedSeconds: 0,
+                currentIndex: 0,
+                correctCount: 0,
+                score: 0,
+                answersRecord: [],
+                isAnswering: false,
+                lifelines: { fifty: false, aud: false, call: false, wise: false }
+            };
+
+            // Reset lifelines UI
+            document.querySelectorAll('.lifeline-btn').forEach(btn => btn.classList.remove('used'));
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.elapsedSeconds++;
+                if(gameState.elapsedSeconds % 2 === 0) playTickSound(); // Nhạc nền (Tick tock nhẹ)
+                updateTimerUI();
+            }, 1000);
+
+            switchScreen('screen-game');
+            loadQuestion();
+        }
+
+        function formatTime(secs) {
+            let m = Math.floor(secs / 60);
+            let s = secs % 60;
+            return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+        }
+
+        function updateTimerUI() {
+            document.getElementById("timer").innerText = formatTime(gameState.elapsedSeconds);
+        }
+
+        function loadQuestion() {
+            if (gameState.currentIndex >= questionsDB.length) {
+                endGame();
+                return;
+            }
+
+            gameState.isAnswering = false;
+            let qData = questionsDB[gameState.currentIndex];
+            
+            document.getElementById("q-number").innerText = (gameState.currentIndex + 1) + "/20";
+            document.getElementById("question-text").innerHTML = `<strong>Câu ${gameState.currentIndex + 1}:</strong> ${qData.q}`;
+
+            let optContainer = document.getElementById("options-container");
+            optContainer.innerHTML = "";
+            
+            for (let i = 0; i < 4; i++) {
+                optContainer.innerHTML += `
+                    <div class="option" id="opt-${i}" onclick="selectOption(${i})">
+                        <span class="opt-letter">${alphabet[i]}.</span> 
+                        <span class="opt-text">${qData.options[i]}</span>
+                    </div>
+                `;
+            }
+
+            // Quản lý hiển thị Quyền trợ giúp
+            let qIndex = gameState.currentIndex;
+            if (qIndex >= 10) document.getElementById('btn-call').classList.remove('locked');
+            if (qIndex >= 15) document.getElementById('btn-wise').classList.remove('locked');
+        }
+
+        function selectOption(selectedIndex) {
+            if (gameState.isAnswering) return;
+            gameState.isAnswering = true;
+
+            let qData = questionsDB[gameState.currentIndex];
+            let correctIndex = qData.ans;
+            let isCorrect = (selectedIndex === correctIndex);
+
+            // UI phản hồi
+            let selectedEl = document.getElementById(`opt-${selectedIndex}`);
+            let correctEl = document.getElementById(`opt-${correctIndex}`);
+            
+            selectedEl.classList.add('selected');
+
+            setTimeout(() => {
+                if (isCorrect) {
+                    selectedEl.classList.remove('selected');
+                    selectedEl.classList.add('correct');
+                    playCorrectSound();
+                    gameState.correctCount++;
+                    gameState.score += 10;
+                    showModal("CHÚC MỪNG BẠN TRẢ LỜI ĐÚNG", "", true, true);
+                } else {
+                    selectedEl.classList.remove('selected');
+                    selectedEl.classList.add('wrong');
+                    correctEl.classList.add('correct');
+                    playWrongSound();
+                    showModal("RẤT TIẾC BẠN ĐÃ TRẢ LỜI SAI", `Đáp án đúng là ${alphabet[correctIndex]}`, false, true);
+                }
+
+                // Lưu lịch sử
+                gameState.answersRecord.push({
+                    qNum: gameState.currentIndex + 1,
+                    question: qData.q,
+                    userAnsStr: alphabet[selectedIndex] + ". " + qData.options[selectedIndex],
+                    correctAnsStr: alphabet[correctIndex] + ". " + qData.options[correctIndex],
+                    isCorrect: isCorrect
+                });
+
+            }, 800); // Đợi 0.8s tạo cảm giác hồi hộp
+        }
+
+        // --- LIFELINES ---
+        function useLifeline(type) {
+            if (gameState.isAnswering || gameState.lifelines[type]) return;
+            
+            let qData = questionsDB[gameState.currentIndex];
+            let correctIndex = qData.ans;
+            
+            gameState.lifelines[type] = true;
+            
+            if (type === '50') {
+                document.getElementById('btn-50').classList.add('used');
+                let wrongIndices = [0,1,2,3].filter(i => i !== correctIndex);
+                // Randomly hide 2 wrong options
+                wrongIndices.sort(() => 0.5 - Math.random());
+                document.getElementById(`opt-${wrongIndices[0]}`).classList.add('hidden-option');
+                document.getElementById(`opt-${wrongIndices[0]}`).classList.add('disabled');
+                document.getElementById(`opt-${wrongIndices[1]}`).classList.add('hidden-option');
+                document.getElementById(`opt-${wrongIndices[1]}`).classList.add('disabled');
+            } 
+            else if (type === 'aud') {
+                document.getElementById('btn-aud').classList.add('used');
+                let percs = [0,0,0,0];
+                percs[correctIndex] = Math.floor(Math.random() * 30) + 50; // 50-80%
+                let remain = 100 - percs[correctIndex];
+                let wrongIndices = [0,1,2,3].filter(i => i !== correctIndex);
+                percs[wrongIndices[0]] = Math.floor(Math.random() * (remain - 2)) + 1;
+                remain -= percs[wrongIndices[0]];
+                percs[wrongIndices[1]] = Math.floor(Math.random() * (remain - 1)) + 1;
+                percs[wrongIndices[2]] = remain - percs[wrongIndices[1]];
+                
+                let text = `Khán giả bình chọn:<br>
+                A: ${percs[0]}% &nbsp;&nbsp;|&nbsp;&nbsp; B: ${percs[1]}% <br>
+                C: ${percs[2]}% &nbsp;&nbsp;|&nbsp;&nbsp; D: ${percs[3]}%`;
+                showModal("Ý KIẾN KHÁN GIẢ", text, true, false);
+            }
+            else if (type === 'call') {
+                document.getElementById('btn-call').classList.add('used');
+                showModal("GỌI ĐIỆN CHO NGƯỜI THÂN", `📞 Người thân của bạn nói: "Chào con, bố nghĩ đáp án đúng có vẻ là <strong>${alphabet[correctIndex]}</strong> con ạ. Tự tin lên nhé!"`, true, false);
+            }
+            else if (type === 'wise') {
+                document.getElementById('btn-wise').classList.add('used');
+                showModal("Ý KIẾN NHÀ THÔNG THÁI", `🧙‍♂️ Cố vấn phân tích: "Dựa vào kiến thức hoá học về nhóm Halogen, đáp án chính xác 100% là <strong>${alphabet[correctIndex]}</strong>."`, true, false);
+            }
+        }
+
+        // --- MODAL & FLOW CONTROL ---
+        let autoNextTimeout = null;
+        function showModal(title, text, isSuccess, isAnswerFeedback) {
+            let tEl = document.getElementById("modal-title");
+            tEl.innerText = title;
+            tEl.className = "modal-title " + (isSuccess ? "success" : "error");
+            document.getElementById("modal-text").innerHTML = text;
+            
+            let btn = document.getElementById("modal-btn");
+            if (isAnswerFeedback) {
+                btn.style.display = "none";
+                autoNextTimeout = setTimeout(() => {
+                    closeModal();
+                    gameState.currentIndex++;
+                    loadQuestion();
+                }, 2000); // Tự động chuyển câu sau 2s
+            } else {
+                btn.style.display = "inline-block";
+            }
+            
+            document.getElementById("modal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
+            if(autoNextTimeout) {
+                clearTimeout(autoNextTimeout);
+                autoNextTimeout = null;
+            }
+        }
+
+        // --- END GAME & STORAGE ---
+        function endGame() {
+            clearInterval(gameState.timerInterval);
+            
+            let now = new Date();
+            let submitTimeStr = now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes() + " " + now.getDate() + "/" + (now.getMonth()+1) + "/" + now.getFullYear();
+            let durationStr = formatTime(gameState.elapsedSeconds);
+
+            // Lấp đầy UI Kết quả
+            document.getElementById("res-name").innerText = gameState.name;
+            document.getElementById("res-class").innerText = gameState.className;
+            document.getElementById("res-correct").innerText = gameState.correctCount;
+            document.getElementById("res-score").innerText = gameState.score;
+            document.getElementById("res-time").innerText = durationStr;
+
+            let reviewHTML = "";
+            gameState.answersRecord.forEach(rec => {
+                let statusClass = rec.isCorrect ? "correct-row" : "wrong-row";
+                let statusText = rec.isCorrect ? "<span style='color:var(--correct)'>ĐÚNG</span>" : "<span style='color:var(--wrong)'>SAI</span>";
+                reviewHTML += `
+                    <div class="review-item ${statusClass}">
+                        <strong>Câu ${rec.qNum}:</strong> ${rec.question}<br>
+                        - Bạn chọn: ${rec.userAnsStr} (${statusText})<br>
+                        ${!rec.isCorrect ? `- Đáp án đúng: ${rec.correctAnsStr}` : ""}
+                    </div>
+                `;
+            });
+            document.getElementById("review-list").innerHTML = reviewHTML;
+
+            // Lưu LocalStorage
+            let record = {
+                id: Date.now(),
+                name: gameState.name,
+                cls: gameState.className,
+                correct: gameState.correctCount,
+                score: gameState.score,
+                submitTime: submitTimeStr,
+                duration: durationStr
+            };
+            
+            let allRecords = JSON.parse(localStorage.getItem('ALTP_Records')) || [];
+            allRecords.push(record);
+            localStorage.setItem('ALTP_Records', JSON.stringify(allRecords));
+
+            switchScreen('screen-result');
+        }
+
+        function showLeaderboard() {
+            let allRecords = JSON.parse(localStorage.getItem('ALTP_Records')) || [];
+            // Sắp xếp: Điểm giảm dần, thời gian tăng dần
+            allRecords.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.duration.localeCompare(b.duration);
+            });
+
+            let tbody = document.getElementById("lb-body");
+            tbody.innerHTML = "";
+            
+            if (allRecords.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='7'>Chưa có dữ liệu</td></tr>";
+            } else {
+                allRecords.forEach((rec, index) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${rec.name}</td>
+                            <td>${rec.cls}</td>
+                            <td>${rec.correct}</td>
+                            <td style="color:var(--gold); font-weight:bold;">${rec.score}</td>
+                            <td>${rec.submitTime}</td>
+                            <td>${rec.duration}</td>
+                        </tr>
+                    `;
+                });
+            }
+            switchScreen('screen-leaderboard');
+        }
+
+        function resetGame() {
+            document.getElementById("studentName").value = "";
+            document.getElementById("studentClass").value = "";
+            switchScreen('screen-login');
+        }
+
+        function clearLeaderboard() {
+            if(confirm("Bạn có chắc chắn muốn xóa toàn bộ bảng tổng hợp?")) {
+                localStorage.removeItem('ALTP_Records');
+                showLeaderboard();
+            }
+        }
+    </script>
+</body>
+</html>

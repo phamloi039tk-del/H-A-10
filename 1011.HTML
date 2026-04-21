@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ai Là Triệu Phú - Liên Kết Ion</title>
+    <style>
+        :root {
+            --primary-bg: #001133;
+            --gradient-bg: linear-gradient(135deg, #001A33 0%, #004080 100%);
+            --header-bg: #000c22;
+            --text-color: #ffffff;
+            --accent-color: #ffaa00;
+            --correct-color: #28a745;
+            --wrong-color: #dc3545;
+            --hover-color: #ffcc00;
+            --disabled-color: #555555;
+            --box-border: 2px solid #4da6ff;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            background-image: radial-gradient(circle at center, #002244 0%, #000b1a 100%);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: #88ccff;
+            text-align: center;
+            padding: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 1px solid #4da6ff;
+            letter-spacing: 1px;
+            z-index: 10;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* --- Login Screen --- */
+        .login-box {
+            background: rgba(0, 30, 80, 0.8);
+            border: var(--box-border);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.3);
+        }
+
+        .login-box h1 {
+            color: var(--accent-color);
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-transform: uppercase;
+        }
+
+        .login-box h2 {
+            font-size: 18px;
+            margin-bottom: 30px;
+            font-weight: normal;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid #4da6ff;
+            background: #001133;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            box-shadow: 0 0 10px #4da6ff;
+        }
+
+        .btn {
+            background: linear-gradient(180deg, #ffcc00 0%, #d48806 100%);
+            color: #000;
+            border: none;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+        }
+
+        /* --- Game Screen --- */
+        .game-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #336699;
+        }
+
+        .question-info {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .lifelines {
+            display: flex;
+            gap: 10px;
+        }
+
+        .lifeline-btn {
+            background: radial-gradient(circle, #005599 0%, #002244 100%);
+            border: 2px solid #4da6ff;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            text-align: center;
+            line-height: 1.1;
+            padding: 2px;
+        }
+
+        .lifeline-btn:hover:not(.used):not(.hidden) {
+            background: radial-gradient(circle, #0088ff 0%, #004488 100%);
+            transform: scale(1.1);
+        }
+
+        .lifeline-btn.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: var(--disabled-color);
+            text-decoration: line-through;
+        }
+
+        .lifeline-btn.hidden {
+            display: none !important;
+        }
+
+        .question-box {
+            background: var(--gradient-bg);
+            border: var(--box-border);
+            border-radius: 30px;
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 22px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(0, 150, 255, 0.2);
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .option {
+            background: var(--gradient-bg);
+            border: var(--box-border);
+            border-radius: 30px;
+            padding: 15px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option:hover {
+            background: linear-gradient(135deg, #003366 0%, #005599 100%);
+            border-color: #fff;
+        }
+
+        .option .letter {
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 20px;
+        }
+
+        .option.selected {
+            background: #ffcc00 !important;
+            color: #000 !important;
+            border-color: #fff !important;
+        }
+        .option.selected .letter { color: #000; }
+
+        .option.correct {
+            background: var(--correct-color) !important;
+            color: #fff !important;
+            border-color: #fff !important;
+            animation: blinkGreen 0.5s 3;
+        }
+        .option.correct .letter { color: #fff; }
+
+        .option.wrong {
+            background: var(--wrong-color) !important;
+            color: #fff !important;
+            border-color: #fff !important;
+        }
+        .option.wrong .letter { color: #fff; }
+
+        /* --- Custom Modal (Alert/Message Box) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-content {
+            background: #002244;
+            border: 2px solid #4da6ff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(0, 150, 255, 0.5);
+        }
+        .modal-content h3 { color: var(--accent-color); margin-bottom: 15px; font-size: 24px; }
+        .modal-content p { margin-bottom: 20px; font-size: 18px; line-height: 1.5; white-space: pre-line;}
+        .modal-btn {
+            background: #4da6ff; border: none; padding: 10px 20px; border-radius: 5px; color: #000; font-weight: bold; cursor: pointer;
+        }
+
+        /* --- Result Notification Overlay --- */
+        .feedback-overlay {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 40px;
+            border-radius: 10px;
+            border: 2px solid #fff;
+            color: #fff;
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 50;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .feedback-overlay.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        .feedback-overlay.correct { border-color: var(--correct-color); color: var(--correct-color); }
+        .feedback-overlay.wrong { border-color: var(--wrong-color); color: var(--wrong-color); }
+
+        /* --- Summary Screen --- */
+        .summary-box {
+            background: rgba(0, 30, 80, 0.9);
+            border: var(--box-border);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .summary-header { text-align: center; margin-bottom: 20px; }
+        .summary-header h1 { color: var(--accent-color); margin-bottom: 10px; }
+        .summary-stats { display: flex; justify-content: space-around; background: #001133; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        
+        .review-list {
+            max-height: 400px;
+            overflow-y: auto;
+            text-align: left;
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+        .review-item {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 5px solid gray;
+        }
+        .review-item.correct { border-left-color: var(--correct-color); }
+        .review-item.wrong { border-left-color: var(--wrong-color); }
+        .review-q { font-weight: bold; margin-bottom: 5px; }
+        .review-ans { font-size: 14px; color: #ccc; }
+        
+        .action-buttons { text-align: center; display: flex; gap: 15px; justify-content: center; }
+
+        /* --- Leaderboard Screen --- */
+        .leaderboard-box {
+            background: rgba(0, 30, 80, 0.9);
+            border: var(--box-border);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        .leaderboard-box h1 { text-align: center; color: var(--accent-color); margin-bottom: 20px; }
+        .table-responsive { overflow-x: auto; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th, td { border: 1px solid #4da6ff; padding: 12px; text-align: center; }
+        th { background: #002244; color: #88ccff; }
+        tr:nth-child(even) { background: rgba(255, 255, 255, 0.05); }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px;}
+        ::-webkit-scrollbar-track { background: #001133; }
+        ::-webkit-scrollbar-thumb { background: #4da6ff; border-radius: 4px; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes blinkGreen { 0%, 100% { background: var(--correct-color); } 50% { background: #001133; } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; gap: 10px; }
+            .question-box { font-size: 18px; padding: 20px 15px; }
+            .option { font-size: 16px; padding: 12px; }
+            .lifeline-btn { width: 45px; height: 45px; font-size: 12px; }
+            .summary-stats { flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        GIÁO VIÊN THIẾT KẾ: PHẠM LỢI - TRƯỜNG PTDTNT THPT THAN UYÊN
+    </div>
+
+    <div class="container">
+        <!-- SCREEN 1: LOGIN -->
+        <div id="login-screen" class="screen active">
+            <div class="login-box">
+                <h1>Ai Là Triệu Phú</h1>
+                <h2>Chủ đề: Liên kết Ion (Hóa 10)</h2>
+                <div class="form-group">
+                    <label for="studentName">Họ và tên học sinh:</label>
+                    <input type="text" id="studentName" placeholder="Nhập họ tên của bạn..." autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="studentClass">Lớp:</label>
+                    <input type="text" id="studentClass" placeholder="Nhập lớp (VD: 10A1)..." autocomplete="off">
+                </div>
+                <button class="btn" onclick="startGame()">BẮT ĐẦU</button>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: GAME -->
+        <div id="game-screen" class="screen">
+            <div class="game-layout">
+                <div class="top-bar">
+                    <div class="question-info">Câu hỏi: <span id="q-number">1</span>/20</div>
+                    <div class="lifelines">
+                        <button class="lifeline-btn" id="ll-5050" onclick="useLifeline('5050')" title="50:50">50:50</button>
+                        <button class="lifeline-btn" id="ll-audience" onclick="useLifeline('audience')" title="Hỏi ý kiến khán giả">👥</button>
+                        <button class="lifeline-btn hidden" id="ll-call" onclick="useLifeline('call')" title="Gọi điện người thân">📞</button>
+                        <button class="lifeline-btn hidden" id="ll-wise" onclick="useLifeline('wise')" title="Hỏi nhà thông thái">🧠</button>
+                    </div>
+                </div>
+                
+                <div class="question-box" id="question-text">
+                    Đang tải câu hỏi...
+                </div>
+
+                <div class="options-grid">
+                    <div class="option" id="opt-0" onclick="selectOption(0)"><span class="letter">A:</span><span class="text"></span></div>
+                    <div class="option" id="opt-1" onclick="selectOption(1)"><span class="letter">B:</span><span class="text"></span></div>
+                    <div class="option" id="opt-2" onclick="selectOption(2)"><span class="letter">C:</span><span class="text"></span></div>
+                    <div class="option" id="opt-3" onclick="selectOption(3)"><span class="letter">D:</span><span class="text"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: RESULT SUMMARY -->
+        <div id="result-screen" class="screen">
+            <div class="summary-box">
+                <div class="summary-header">
+                    <h1>KẾT QUẢ LÀM BÀI</h1>
+                    <h2 id="sum-name-class" style="color: #ccc;"></h2>
+                </div>
+                <div class="summary-stats">
+                    <div><strong>Số câu đúng:</strong> <span id="sum-correct" style="color: var(--correct-color); font-size: 24px;">0</span>/20</div>
+                    <div><strong>Điểm:</strong> <span id="sum-score" style="color: var(--accent-color); font-size: 24px;">0</span></div>
+                    <div><strong>Thời gian:</strong> <span id="sum-time">0</span></div>
+                </div>
+                <div class="review-list" id="review-list">
+                    <!-- JS Sinh ra -->
+                </div>
+                <div class="action-buttons">
+                    <button class="btn" onclick="showLeaderboard()">Xem Bảng Xếp Hạng</button>
+                    <button class="btn" onclick="resetGame()">Làm Lại Bài</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 4: LEADERBOARD -->
+        <div id="leaderboard-screen" class="screen">
+            <div class="leaderboard-box">
+                <h1>BẢNG TỔNG HỢP KẾT QUẢ</h1>
+                <div class="table-responsive">
+                    <table id="lb-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Họ tên</th>
+                                <th>Lớp</th>
+                                <th>Số câu đúng</th>
+                                <th>Điểm</th>
+                                <th>Thời gian nộp</th>
+                                <th>Thời gian làm bài</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lb-body">
+                            <!-- JS Sinh ra -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn" onclick="resetGame()">Chơi Lại</button>
+                    <button class="btn" style="background: #dc3545; color: white;" onclick="clearLeaderboard()">Xóa Bảng Tổng Hợp</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals & Overlays -->
+    <div id="custom-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Thông báo</h3>
+            <p id="modal-text"></p>
+            <button class="modal-btn" onclick="closeModal()">Đóng</button>
+        </div>
+    </div>
+
+    <div id="feedback-overlay" class="feedback-overlay"></div>
+
+    <script>
+        // --- 1. GAME DATA ---
+        // 20 Questions based on provided PDF
+        const rawQuestions = [
+            // Nhận biết (1-6)
+            { q: "Liên kết ion là liên kết được hình thành bởi:", options: ["Lực hút tĩnh điện giữa các ion mang điện trái dấu", "Sự dùng chung một hay nhiều cặp electron", "Sự cho nhận cặp electron", "Lực hút tĩnh điện giữa các phân tử"], answer: 0 },
+            { q: "Nguyên tử kim loại điển hình thường có xu hướng:", options: ["Nhường electron để tạo thành ion dương (cation)", "Nhận electron để tạo thành ion âm (anion)", "Nhường electron để tạo thành anion", "Nhận electron để tạo thành cation"], answer: 0 },
+            { q: "Số đơn vị điện tích của cation bằng:", options: ["Số electron mà nguyên tử đã nhường", "Số electron mà nguyên tử đã nhận", "Tổng số proton của hạt nhân", "Số neutron của hạt nhân"], answer: 0 },
+            { q: "Trong tinh thể NaCl, các ion được sắp xếp như thế nào?", options: ["Luân phiên đều đặn thành mạng lưới không gian", "Hỗn loạn, không có trật tự nhất định", "Thành từng lớp tách biệt nhau", "Thành các phân tử NaCl độc lập"], answer: 0 },
+            { q: "Ở điều kiện thường, các hợp chất ion thường tồn tại ở trạng thái nào?", options: ["Trạng thái rắn", "Trạng thái lỏng", "Trạng thái khí", "Trạng thái plasma"], answer: 0 },
+            { q: "Ion Na<sup>+</sup> có cấu hình electron giống với nguyên tử khí hiếm nào sau đây?", options: ["Neon (Ne)", "Argon (Ar)", "Helium (He)", "Krypton (Kr)"], answer: 0 },
+            
+            // Thông hiểu (7-12)
+            { q: "Hợp chất nào sau đây là hợp chất ion?", options: ["KCl", "HCl", "H<sub>2</sub>O", "CO<sub>2</sub>"], answer: 0 },
+            { q: "Sơ đồ nào sau đây biểu diễn đúng quá trình tạo thành ion Ca<sup>2+</sup> từ nguyên tử Ca?", options: ["Ca &rarr; Ca<sup>2+</sup> + 2e", "Ca + 2e &rarr; Ca<sup>2+</sup>", "Ca &rarr; Ca<sup>2+</sup> + 1e", "Ca + 1e &rarr; Ca<sup>2+</sup>"], answer: 0 },
+            { q: "Sơ đồ biểu diễn đúng sự tạo thành ion S<sup>2-</sup> từ nguyên tử S là:", options: ["S + 2e &rarr; S<sup>2-</sup>", "S &rarr; S<sup>2-</sup> + 2e", "S + 6e &rarr; S<sup>2-</sup>", "S &rarr; S<sup>2-</sup> + 6e"], answer: 0 },
+            { q: "Tính chất nào sau đây <b>không</b> phải là tính chất của hợp chất ion?", options: ["Có nhiệt độ nóng chảy thấp", "Thường tan nhiều trong nước", "Dẫn điện khi nóng chảy hoặc hoà tan", "Khá rắn chắc nhưng giòn"], answer: 0 },
+            { q: "Giải thích vì sao hợp chất ion ở trạng thái rắn <b>không</b> dẫn được điện?", options: ["Vì các ion không thể di chuyển tự do", "Vì tinh thể không có các electron", "Vì mạng lưới tinh thể quá thưa thớt", "Vì các ion đã bị trung hoà về điện"], answer: 0 },
+            { q: "Cho nguyên tử Al (Z = 13). Cấu hình electron của ion Al<sup>3+</sup> là:", options: ["1s<sup>2</sup>2s<sup>2</sup>2p<sup>6</sup>", "1s<sup>2</sup>2s<sup>2</sup>2p<sup>6</sup>3s<sup>2</sup>3p<sup>1</sup>", "1s<sup>2</sup>2s<sup>2</sup>2p<sup>6</sup>3s<sup>2</sup>", "1s<sup>2</sup>2s<sup>2</sup>2p<sup>6</sup>3s<sup>2</sup>3p<sup>4</sup>"], answer: 0 },
+            
+            // Vận dụng thấp (13-16)
+            { q: "Hợp chất MgCl<sub>2</sub> được tạo thành từ sự kết hợp của các ion nào?", options: ["Mg<sup>2+</sup> và Cl<sup>-</sup>", "Mg<sup>+</sup> và Cl<sup>-</sup>", "Mg<sup>2+</sup> và Cl<sup>2-</sup>", "Mg<sup>2-</sup> và Cl<sup>+</sup>"], answer: 0 },
+            { q: "Cho các chất: K<sub>2</sub>O, H<sub>2</sub>S, SO<sub>2</sub>, NaCl. Số chất chứa liên kết ion là:", options: ["2 (K<sub>2</sub>O, NaCl)", "1", "3", "4"], answer: 0 },
+            { q: "Nguyên tử X có Z = 11, nguyên tử Y có Z = 8. Công thức phân tử của hợp chất ion tạo thành giữa X và Y là:", options: ["X<sub>2</sub>Y", "XY", "XY<sub>2</sub>", "X<sub>2</sub>Y<sub>3</sub>"], answer: 0 },
+            { q: "Trong các ion sau, ion đa nguyên tử mang điện tích âm (anion đa nguyên tử) là:", options: ["SO<sub>4</sub><sup>2-</sup>", "NH<sub>4</sub><sup>+</sup>", "Na<sup>+</sup>", "H<sub>3</sub>O<sup>+</sup>"], answer: 0 },
+            
+            // Vận dụng cao (17-20)
+            { q: "Anion X<sup>-</sup> có cấu hình electron lớp ngoài cùng là 3p<sup>6</sup>. Vị trí của X trong bảng tuần hoàn là:", options: ["Chu kì 3, nhóm VIIA", "Chu kì 3, nhóm VIA", "Chu kì 4, nhóm VIIA", "Chu kì 3, nhóm VIIIA"], answer: 0 },
+            { q: "Nguyên tố M thuộc chu kì 4, nhóm IA. Nguyên tố X là halogen thuộc chu kì 3. Công thức hợp chất giữa M và X là:", options: ["KCl", "NaCl", "MgCl<sub>2</sub>", "CaCl<sub>2</sub>"], answer: 0 },
+            { q: "Vì sao một ion O<sup>2-</sup> lại kết hợp được với hai ion Li<sup>+</sup> để tạo thành phân tử Li<sub>2</sub>O?", options: ["Để phân tử tạo thành được trung hoà về điện", "Vì Li có độ âm điện lớn hơn O", "Vì ion O<sup>2-</sup> có kích thước gấp đôi ion Li<sup>+</sup>", "Vì Li nằm ở chu kì 2 cùng với O"], answer: 0 },
+            { q: "Trong mô hình tinh thể NaCl, mỗi ion Na<sup>+</sup> được bao quanh bởi bao nhiêu ion Cl<sup>-</sup> gần nhất?", options: ["6", "4", "8", "12"], answer: 0 }
+        ];
+
+        // --- 2. GAME STATE ---
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let correctCount = 0;
+        let student = { name: '', class: '' };
+        let startTime = 0;
+        let userAnswers = []; // store results for review
+        let isWaiting = false;
+
+        let lifelines = {
+            '5050': true,
+            'audience': true,
+            'call': true,
+            'wise': true
+        };
+
+        // --- 3. AUDIO (Web Audio API) ---
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playBeep(freq, type, duration, vol=0.1) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSoundCorrect() {
+            playBeep(523.25, 'sine', 0.1); // C5
+            setTimeout(() => playBeep(659.25, 'sine', 0.1), 100); // E5
+            setTimeout(() => playBeep(783.99, 'sine', 0.3), 200); // G5
+        }
+
+        function playSoundWrong() {
+            playBeep(300, 'sawtooth', 0.4);
+            setTimeout(() => playBeep(250, 'sawtooth', 0.5), 150);
+        }
+
+        function playSoundTick() {
+            playBeep(800, 'sine', 0.05, 0.05);
+        }
+
+        // --- 4. CORE LOGIC ---
+        function shuffleQuestions(qArray) {
+            return qArray.map(q => {
+                let options = q.options.map((text, idx) => ({ text, isCorrect: idx === q.answer }));
+                // Shuffle options
+                for (let i = options.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [options[i], options[j]] = [options[j], options[i]];
+                }
+                return {
+                    q: q.q,
+                    options: options.map(o => o.text),
+                    answer: options.findIndex(o => o.isCorrect)
+                };
+            });
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('studentName').value.trim();
+            const classInput = document.getElementById('studentClass').value.trim();
+
+            if (!nameInput || !classInput) {
+                showModal('Lỗi', 'Vui lòng nhập đầy đủ Họ tên và Lớp!');
+                return;
+            }
+
+            student.name = nameInput;
+            student.class = classInput;
+            
+            initAudio(); // Initialize audio context on user gesture
+            
+            // Reset state
+            currentQuestions = shuffleQuestions(rawQuestions);
+            currentIndex = 0;
+            correctCount = 0;
+            score = 0;
+            userAnswers = [];
+            lifelines = { '5050': true, 'audience': true, 'call': true, 'wise': true };
+            startTime = Date.now();
+            
+            // Reset lifelines UI
+            document.querySelectorAll('.lifeline-btn').forEach(btn => btn.classList.remove('used', 'hidden'));
+
+            switchScreen('game-screen');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            isWaiting = false;
+            const q = currentQuestions[currentIndex];
+            document.getElementById('q-number').innerText = (currentIndex + 1);
+            document.getElementById('question-text').innerHTML = q.q;
+
+            // Reset options UI
+            for (let i = 0; i < 4; i++) {
+                const optEl = document.getElementById('opt-' + i);
+                optEl.querySelector('.text').innerHTML = q.options[i];
+                optEl.className = 'option';
+                optEl.style.visibility = 'visible';
+            }
+
+            // Lifeline logic
+            // 1-10: 5050, audience
+            // 11-15: + call
+            // 16-20: + wise
+            let qNum = currentIndex + 1;
+            document.getElementById('ll-call').classList.toggle('hidden', qNum < 11);
+            document.getElementById('ll-wise').classList.toggle('hidden', qNum < 16);
+
+            playSoundTick();
+        }
+
+        function selectOption(selectedIndex) {
+            if (isWaiting) return;
+            isWaiting = true;
+            
+            const q = currentQuestions[currentIndex];
+            const isCorrect = (selectedIndex === q.answer);
+            
+            const selectedEl = document.getElementById('opt-' + selectedIndex);
+            const correctEl = document.getElementById('opt-' + q.answer);
+            
+            // Yellow Highlight
+            selectedEl.classList.add('selected');
+
+            // Wait 1.5s to reveal
+            setTimeout(() => {
+                selectedEl.classList.remove('selected');
+                
+                if (isCorrect) {
+                    correctEl.classList.add('correct');
+                    playSoundCorrect();
+                    showFeedback("CHÚC MỪNG BẠN TRẢ LỜI ĐÚNG", true);
+                    correctCount++;
+                    score += 5; // 5 points per question
+                } else {
+                    selectedEl.classList.add('wrong');
+                    correctEl.classList.add('correct'); // Show correct one
+                    playSoundWrong();
+                    showFeedback("RẤT TIẾC BẠN ĐÃ TRẢ LỜI SAI", false);
+                }
+
+                userAnswers.push({
+                    qStr: q.q,
+                    userAns: q.options[selectedIndex],
+                    correctAns: q.options[q.answer],
+                    isCorrect: isCorrect
+                });
+
+                // Wait 2.5s before next question
+                setTimeout(() => {
+                    hideFeedback();
+                    currentIndex++;
+                    if (currentIndex < currentQuestions.length) {
+                        loadQuestion();
+                    } else {
+                        endGame();
+                    }
+                }, 2500);
+
+            }, 1500);
+        }
+
+        function showFeedback(msg, isCorrect) {
+            const overlay = document.getElementById('feedback-overlay');
+            overlay.innerText = msg;
+            overlay.className = `feedback-overlay show ${isCorrect ? 'correct' : 'wrong'}`;
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback-overlay').classList.remove('show');
+        }
+
+        // --- 5. LIFELINES ---
+        function useLifeline(type) {
+            if (isWaiting) return;
+            if (!lifelines[type]) return;
+            
+            const q = currentQuestions[currentIndex];
+            lifelines[type] = false;
+            document.getElementById('ll-' + type).classList.add('used');
+
+            if (type === '5050') {
+                let wrongIndices = [0, 1, 2, 3].filter(i => i !== q.answer);
+                // Shuffle and pick 2
+                wrongIndices.sort(() => Math.random() - 0.5);
+                document.getElementById('opt-' + wrongIndices[0]).style.visibility = 'hidden';
+                document.getElementById('opt-' + wrongIndices[1]).style.visibility = 'hidden';
+                playSoundTick();
+            } 
+            else if (type === 'audience') {
+                let correctPct = Math.floor(Math.random() * 30) + 55; // 55-84%
+                let remaining = 100 - correctPct;
+                let msg = `Khán giả bình chọn:\n\n`;
+                
+                let wIndices = [0, 1, 2, 3].filter(i => i !== q.answer);
+                let dist = [0,0,0,0];
+                dist[q.answer] = correctPct;
+                
+                let r1 = Math.floor(Math.random() * remaining);
+                let r2 = Math.floor(Math.random() * (remaining - r1));
+                let r3 = remaining - r1 - r2;
+                
+                dist[wIndices[0]] = r1;
+                dist[wIndices[1]] = r2;
+                dist[wIndices[2]] = r3;
+
+                ['A', 'B', 'C', 'D'].forEach((l, i) => {
+                    msg += `Đáp án ${l}: ${dist[i]}%\n`;
+                });
+                showModal('Hỏi ý kiến khán giả', msg);
+            }
+            else if (type === 'call') {
+                let isSure = Math.random() > 0.2;
+                let ansLetter = String.fromCharCode(65 + q.answer);
+                let msg = isSure 
+                    ? `"Chào bạn, mình khá chắc chắn đáp án đúng là ${ansLetter}."`
+                    : `"Chào bạn, câu này hơi khó, nhưng mình nghĩ có thể là ${ansLetter}."`;
+                showModal('Gọi điện thoại cho người thân', msg);
+            }
+            else if (type === 'wise') {
+                let ansLetter = String.fromCharCode(65 + q.answer);
+                let msg = `"Theo nghiên cứu của chúng tôi, đáp án chính xác 100% là ${ansLetter}."`;
+                showModal('Hỏi ý kiến nhà thông thái', msg);
+            }
+        }
+
+        // --- 6. MODALS ---
+        function showModal(title, text) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('custom-modal').classList.add('active');
+        }
+        function closeModal() {
+            document.getElementById('custom-modal').classList.remove('active');
+        }
+
+        // --- 7. RESULTS & LEADERBOARD ---
+        function endGame() {
+            const endTime = Date.now();
+            const durationSec = Math.floor((endTime - startTime) / 1000);
+            const mins = Math.floor(durationSec / 60);
+            const secs = durationSec % 60;
+            const timeStr = `${mins} phút ${secs} giây`;
+            const submitTimeStr = new Date().toLocaleString('vi-VN');
+
+            // Save to localStorage
+            const record = {
+                name: student.name,
+                class: student.class,
+                correct: correctCount,
+                score: score,
+                submitTime: submitTimeStr,
+                duration: timeStr
+            };
+            
+            let lbData = JSON.parse(localStorage.getItem('altp_results') || '[]');
+            lbData.push(record);
+            localStorage.setItem('altp_results', JSON.stringify(lbData));
+
+            // Populate Summary Screen
+            document.getElementById('sum-name-class').innerText = `${student.name} - ${student.class}`;
+            document.getElementById('sum-correct').innerText = correctCount;
+            document.getElementById('sum-score').innerText = score;
+            document.getElementById('sum-time').innerText = timeStr;
+
+            const reviewList = document.getElementById('review-list');
+            reviewList.innerHTML = '';
+            userAnswers.forEach((ans, i) => {
+                let div = document.createElement('div');
+                div.className = `review-item ${ans.isCorrect ? 'correct' : 'wrong'}`;
+                div.innerHTML = `
+                    <div class="review-q">Câu ${i+1}: ${ans.qStr}</div>
+                    <div class="review-ans">
+                        Bạn chọn: ${ans.userAns} <br>
+                        ${ans.isCorrect ? '' : `Đáp án đúng: ${ans.correctAns}`}
+                    </div>
+                `;
+                reviewList.appendChild(div);
+            });
+
+            switchScreen('result-screen');
+        }
+
+        function showLeaderboard() {
+            let lbData = JSON.parse(localStorage.getItem('altp_results') || '[]');
+            // Sort by correct desc, then time asc (roughly)
+            lbData.sort((a, b) => b.correct - a.correct);
+
+            const tbody = document.getElementById('lb-body');
+            tbody.innerHTML = '';
+
+            if (lbData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7">Chưa có dữ liệu.</td></tr>`;
+            } else {
+                lbData.forEach((row, idx) => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${row.name}</td>
+                            <td>${row.class}</td>
+                            <td style="color:var(--correct-color); font-weight:bold">${row.correct}</td>
+                            <td style="color:var(--accent-color); font-weight:bold">${row.score}</td>
+                            <td>${row.submitTime}</td>
+                            <td>${row.duration}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            switchScreen('leaderboard-screen');
+        }
+
+        function resetGame() {
+            switchScreen('login-screen');
+        }
+
+        function clearLeaderboard() {
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ kết quả?')) {
+                localStorage.removeItem('altp_results');
+                showLeaderboard();
+            }
+        }
+    </script>
+</body>
+</html>
